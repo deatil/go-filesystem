@@ -1,7 +1,7 @@
 package config
 
 import(
-    "github.com/deatil/go-filesystem/interfaces"
+    "github.com/deatil/go-filesystem/filesystem/interfaces"
 )
 
 /**

@@ -10,8 +10,8 @@ import (
     "io/ioutil"
     "path/filepath"
 
-    "github.com/deatil/go-filesystem/interfaces"
-    "github.com/deatil/go-filesystem/adapter"
+    "github.com/deatil/go-filesystem/filesystem/interfaces"
+    "github.com/deatil/go-filesystem/filesystem/adapter"
 )
 
 // 本地文件适配器
@@ -437,6 +437,10 @@ func (sys *Local) SetVisibility(path string, visibility string) (map[string]stri
         pathType = "dir"
     }
 
+    if visibility != "private" {
+        visibility = "public"
+    }
+
     e := os.Chmod(location, sys.FormatPerm(permissionMap[pathType][visibility]))
     if e != nil {
         return nil, errors.New("设置文件权限失败")
@@ -494,9 +498,9 @@ func (sys *Local) GetRecursiveDirectoryIterator(path string) ([]map[string]inter
     return files, nil
 }
 
-// 一级目录聂荣
+// 一级目录索引
 func (sys *Local) GetDirectoryIterator(path string) ([]map[string]interface{}, error) {
-    fs, err := ioutil.ReadDir(path)
+    fs, err := os.ReadDir(path)
     if err != nil {
         return []map[string]interface{}{}, err
     }
@@ -510,6 +514,8 @@ func (sys *Local) GetDirectoryIterator(path string) ([]map[string]interface{}, e
     for i := 0; i < sz; i++ {
         info := fs[i]
         name := info.Name()
+        // type := info.Type()
+        stat, _ := info.Info()
         if name != "." && name != ".." {
             var fileType string
             if info.IsDir() {
@@ -521,9 +527,9 @@ func (sys *Local) GetDirectoryIterator(path string) ([]map[string]interface{}, e
             ret = append(ret, map[string]interface{}{
                 "type": fileType,
                 "path": path,
-                "filename": info.Name(),
-                "pathname": path + "/" + info.Name(),
-                "timestamp": info.ModTime().Unix(),
+                "filename": name,
+                "pathname": path + "/" + name,
+                "timestamp": stat.ModTime().Unix(),
                 "info": info,
             })
         }

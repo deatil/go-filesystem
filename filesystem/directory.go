@@ -1,7 +1,7 @@
 package fllesystem
 
 import(
-    "github.com/deatil/go-filesystem/interfaces"
+    "github.com/deatil/go-filesystem/filesystem/interfaces"
 )
 
 // new 文件管理器

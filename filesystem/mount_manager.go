@@ -4,7 +4,7 @@ import(
     "os"
     "strings"
 
-    "github.com/deatil/go-filesystem/interfaces"
+    "github.com/deatil/go-filesystem/filesystem/interfaces"
 )
 
 // 文件系统实例化

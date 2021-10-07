@@ -4,9 +4,9 @@ import(
     "os"
     "errors"
 
-    "github.com/deatil/go-filesystem/util"
-    "github.com/deatil/go-filesystem/config"
-    "github.com/deatil/go-filesystem/interfaces"
+    "github.com/deatil/go-filesystem/filesystem/util"
+    "github.com/deatil/go-filesystem/filesystem/config"
+    "github.com/deatil/go-filesystem/filesystem/interfaces"
 )
 
 // new 文件管理器
