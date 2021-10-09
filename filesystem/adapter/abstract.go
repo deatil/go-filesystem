@@ -11,7 +11,10 @@ import(
  * @author deatil
  */
 type Abstract struct {
+    // 前缀
     pathPrefix string
+
+    // 分割符
     pathSeparator string
 }
 

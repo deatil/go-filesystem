@@ -4,10 +4,9 @@ import (
     "io"
     "os"
     "fmt"
-    "strings"
     "errors"
+    "strings"
     "net/http"
-    "io/ioutil"
     "path/filepath"
 
     "github.com/deatil/go-filesystem/filesystem/interfaces"
@@ -43,8 +42,10 @@ var permissionMap map[string]map[string]uint32 = map[string]map[string]uint32{
  * @author deatil
  */
 type Local struct {
+    // 默认适配器基类
     adapter.Adapter
 
+    // 权限
     visibility string
 }
 
@@ -197,9 +198,9 @@ func (sys *Local) Read(path string) (map[string]interface{}, error) {
     }
     defer file.Close()
 
-    data, readAllErr := ioutil.ReadAll(file)
+    data, readAllErr := io.ReadAll(file)
     if readAllErr != nil {
-        return nil, errors.New("执行函数 ioutil.ReadAll() 失败, 错误为:" + readAllErr.Error())
+        return nil, errors.New("执行函数 io.ReadAll() 失败, 错误为:" + readAllErr.Error())
     }
 
     contents := fmt.Sprintf("%s", data)

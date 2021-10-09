@@ -22,8 +22,10 @@ func New(settings map[string]interface{}) *Config {
  * @author deatil
  */
 type Config struct {
+    // 设置
     settings map[string]interface{}
 
+    // 配置
     fallback interfaces.Config
 }
 
