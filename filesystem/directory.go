@@ -1,4 +1,4 @@
-package fllesystem
+package filesystem
 
 import(
     "github.com/deatil/go-filesystem/filesystem/interfaces"
