@@ -462,7 +462,7 @@ func (sys *Local) NormalizeFileInfo(file map[string]interface{}) (map[string]int
 
 // 是否可读
 func (sys *Local) GuardAgainstUnreadableFileInfo(fp string) error {
-    _, err := ioutil.ReadFile(fp)
+    _, err := os.ReadFile(fp)
     if err != nil {
         return err
     }
