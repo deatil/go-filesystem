@@ -27,25 +27,25 @@ type Directory struct {
 }
 
 // 设置管理器
-func (dir *Directory) SetFilesystem(filesystem interfaces.Fllesystem) *Directory {
-    dir.filesystem = filesystem
+func (this *Directory) SetFilesystem(filesystem interfaces.Fllesystem) *Directory {
+    this.filesystem = filesystem
 
-    return dir
+    return this
 }
 
 // 设置目录
-func (dir *Directory) SetPath(path string) *Directory {
-    dir.path = path
+func (this *Directory) SetPath(path string) *Directory {
+    this.path = path
 
-    return dir
+    return this
 }
 
 // 删除文件夹
-func (dir *Directory) Delete() bool {
-    return dir.filesystem.DeleteDir(dir.path)
+func (this *Directory) Delete() bool {
+    return this.filesystem.DeleteDir(this.path)
 }
 
 // 列出文件
-func (dir *Directory) GetContents(recursive ...bool) []map[string]interface{} {
-    return dir.filesystem.ListContents(dir.path, recursive...)
+func (this *Directory) GetContents(recursive ...bool) []map[string]interface{} {
+    return this.filesystem.ListContents(this.path, recursive...)
 }

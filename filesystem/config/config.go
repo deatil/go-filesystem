@@ -32,31 +32,31 @@ type Config struct {
 /**
  * 设置配置信息
  */
-func (conf *Config) WithSetting(settings map[string]interface{}) interfaces.Config {
-    conf.settings = settings
+func (this *Config) WithSetting(settings map[string]interface{}) interfaces.Config {
+    this.settings = settings
 
-    return conf
+    return this
 }
 
 /**
  * 设置配置信息
  */
-func (conf *Config) With(key string, value interface{}) interfaces.Config {
-    conf.settings[key] = value
+func (this *Config) With(key string, value interface{}) interfaces.Config {
+    this.settings[key] = value
 
-    return conf
+    return this
 }
 
 /**
  * 获取一个设置
  */
-func (conf *Config) Get(key string) interface{} {
-    if data, ok := conf.settings[key]; ok {
+func (this *Config) Get(key string) interface{} {
+    if data, ok := this.settings[key]; ok {
         return data
     }
 
-    if conf.fallback != nil {
-        return conf.fallback.Get(key)
+    if this.fallback != nil {
+        return this.fallback.Get(key)
     }
 
     return nil
@@ -65,13 +65,13 @@ func (conf *Config) Get(key string) interface{} {
 /**
  * 通过一个 key 值判断设置是否存在
  */
-func (conf *Config) Has(key string) bool {
-    if _, ok := conf.settings[key]; ok {
+func (this *Config) Has(key string) bool {
+    if _, ok := this.settings[key]; ok {
         return true
     }
 
-    if conf.fallback != nil {
-        return conf.fallback.Has(key)
+    if this.fallback != nil {
+        return this.fallback.Has(key)
     }
 
     return false
@@ -80,13 +80,13 @@ func (conf *Config) Has(key string) bool {
 /**
  * 获取一个值带默认
  */
-func (conf *Config) GetDefault(key string, defaults ...interface{}) interface{} {
-    if data, ok := conf.settings[key]; ok {
+func (this *Config) GetDefault(key string, defaults ...interface{}) interface{} {
+    if data, ok := this.settings[key]; ok {
         return data
     }
 
-    if conf.fallback != nil {
-        return conf.fallback.GetDefault(key, defaults...)
+    if this.fallback != nil {
+        return this.fallback.GetDefault(key, defaults...)
     }
 
     if len(defaults) > 0 {
@@ -99,18 +99,18 @@ func (conf *Config) GetDefault(key string, defaults ...interface{}) interface{} 
 /**
  * 设置
  */
-func (conf *Config) Set(key string, value interface{}) interfaces.Config {
-    conf.settings[key] = value
+func (this *Config) Set(key string, value interface{}) interfaces.Config {
+    this.settings[key] = value
 
-    return conf
+    return this
 }
 
 /**
  * 设置一个 fallback
  */
-func (conf *Config) SetFallback(fallback interfaces.Config) interfaces.Config {
-    conf.fallback = fallback
+func (this *Config) SetFallback(fallback interfaces.Config) interfaces.Config {
+    this.fallback = fallback
 
-    return conf
+    return this
 }
 

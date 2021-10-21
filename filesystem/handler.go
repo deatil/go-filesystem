@@ -16,18 +16,18 @@ type Handler struct {
 }
 
 // 是否为文件夹
-func (hand *Handler) IsDir() bool {
-    return hand.GetType() == "dir"
+func (this *Handler) IsDir() bool {
+    return this.GetType() == "dir"
 }
 
 // 是否为文件
-func (hand *Handler) IsFile() bool {
-    return hand.GetType() == "file"
+func (this *Handler) IsFile() bool {
+    return this.GetType() == "file"
 }
 
 // 类型
-func (hand *Handler) GetType() string {
-    metadata := hand.filesystem.GetMetadata(hand.path)
+func (this *Handler) GetType() string {
+    metadata := this.filesystem.GetMetadata(this.path)
 
     if metadata == nil {
         return "dir"
@@ -37,25 +37,25 @@ func (hand *Handler) GetType() string {
 }
 
 // 设置文件系统
-func (hand *Handler) SetFilesystem(filesystem interfaces.Fllesystem) interface{} {
-    hand.filesystem = filesystem
+func (this *Handler) SetFilesystem(filesystem interfaces.Fllesystem) interface{} {
+    this.filesystem = filesystem
 
-    return hand
+    return this
 }
 
 // 获取文件系统
-func (hand *Handler) GetFilesystem() interfaces.Fllesystem {
-    return hand.filesystem
+func (this *Handler) GetFilesystem() interfaces.Fllesystem {
+    return this.filesystem
 }
 
 // 设置目录
-func (hand *Handler) SetPath(path string) interface{} {
-    hand.path = path
+func (this *Handler) SetPath(path string) interface{} {
+    this.path = path
 
-    return hand
+    return this
 }
 
 // 获取目录
-func (hand *Handler) GetPath() string {
-    return hand.path
+func (this *Handler) GetPath() string {
+    return this.path
 }

@@ -52,18 +52,18 @@ type Local struct {
 /**
  * 初始化
  */
-func (sys *Local) Init(config ...map[string]interface{}) {}
+func (this *Local) Init(config ...map[string]interface{}) {}
 
 /**
  * 确认文件夹
  */
-func (sys *Local) EnsureDirectory(root string) error {
-    err := os.MkdirAll(root, sys.FormatPerm(permissionMap["dir"]["public"]))
+func (this *Local) EnsureDirectory(root string) error {
+    err := os.MkdirAll(root, this.FormatPerm(permissionMap["dir"]["public"]))
     if err != nil {
         return errors.New("执行函数 os.MkdirAll() 失败, 错误为:" + err.Error())
     }
 
-    if !sys.IsFile(root) {
+    if !this.IsFile(root) {
         return errors.New("创建一个根目录文件夹失败" )
     }
 
@@ -73,17 +73,17 @@ func (sys *Local) EnsureDirectory(root string) error {
 /**
  * 判断是否存在
  */
-func (sys *Local) Has(path string) bool {
-    location := sys.ApplyPathPrefix(path)
+func (this *Local) Has(path string) bool {
+    location := this.ApplyPathPrefix(path)
 
     _, err := os.Stat(location)
     return err == nil || os.IsExist(err)
 }
 
 // 上传
-func (sys *Local) Write(path string, contents string, conf interfaces.Config) (map[string]interface{}, error) {
-    location := sys.ApplyPathPrefix(path)
-    sys.EnsureDirectory(filepath.Dir(location))
+func (this *Local) Write(path string, contents string, conf interfaces.Config) (map[string]interface{}, error) {
+    location := this.ApplyPathPrefix(path)
+    this.EnsureDirectory(filepath.Dir(location))
 
     out, createErr := os.Create(location)
     if createErr != nil {
@@ -97,7 +97,7 @@ func (sys *Local) Write(path string, contents string, conf interfaces.Config) (m
         return nil, errors.New("执行函数 os.WriteString() 失败, 错误为:" + writeErr.Error())
     }
 
-    size, sizeErr := sys.FileSize(location)
+    size, sizeErr := this.FileSize(location)
     if sizeErr != nil {
         return nil, errors.New("获取文件大小失败, 错误为:" + writeErr.Error())
     }
@@ -111,16 +111,16 @@ func (sys *Local) Write(path string, contents string, conf interfaces.Config) (m
 
     if visibility := conf.Get("visibility"); visibility != nil {
         result["visibility"] = visibility.(string)
-        sys.SetVisibility(location, visibility.(string))
+        this.SetVisibility(location, visibility.(string))
     }
 
     return result, nil
 }
 
 // 上传 Stream 文件类型
-func (sys *Local) WriteStream(path string, stream *os.File, conf interfaces.Config) (map[string]interface{}, error) {
-    location := sys.ApplyPathPrefix(path)
-    sys.EnsureDirectory(filepath.Dir(location))
+func (this *Local) WriteStream(path string, stream *os.File, conf interfaces.Config) (map[string]interface{}, error) {
+    location := this.ApplyPathPrefix(path)
+    this.EnsureDirectory(filepath.Dir(location))
 
     newFile, createErr := os.Create(location)
     if createErr != nil {
@@ -141,15 +141,15 @@ func (sys *Local) WriteStream(path string, stream *os.File, conf interfaces.Conf
 
     if visibility := conf.Get("visibility"); visibility != nil {
         result["visibility"] = visibility.(string)
-        sys.SetVisibility(location, visibility.(string))
+        this.SetVisibility(location, visibility.(string))
     }
 
     return result, nil
 }
 
 // 更新
-func (sys *Local) Update(path string, contents string, conf interfaces.Config) (map[string]interface{}, error) {
-    location := sys.ApplyPathPrefix(path)
+func (this *Local) Update(path string, contents string, conf interfaces.Config) (map[string]interface{}, error) {
+    location := this.ApplyPathPrefix(path)
 
     out, createErr := os.Create(location)
     if createErr != nil {
@@ -163,7 +163,7 @@ func (sys *Local) Update(path string, contents string, conf interfaces.Config) (
         return nil, errors.New("执行函数 os.WriteString() 失败, 错误为:" + writeErr.Error())
     }
 
-    size, sizeErr := sys.FileSize(location)
+    size, sizeErr := this.FileSize(location)
     if sizeErr != nil {
         return nil, errors.New("获取文件大小失败, 错误为:" + writeErr.Error())
     }
@@ -177,20 +177,20 @@ func (sys *Local) Update(path string, contents string, conf interfaces.Config) (
 
     if visibility := conf.Get("visibility"); visibility != nil {
         result["visibility"] = visibility.(string)
-        sys.SetVisibility(location, visibility.(string))
+        this.SetVisibility(location, visibility.(string))
     }
 
     return result, nil
 }
 
 // 更新
-func (sys *Local) UpdateStream(path string, stream *os.File, config interfaces.Config) (map[string]interface{}, error) {
-    return sys.WriteStream(path, stream, config)
+func (this *Local) UpdateStream(path string, stream *os.File, config interfaces.Config) (map[string]interface{}, error) {
+    return this.WriteStream(path, stream, config)
 }
 
 // 读取
-func (sys *Local) Read(path string) (map[string]interface{}, error) {
-    location := sys.ApplyPathPrefix(path)
+func (this *Local) Read(path string) (map[string]interface{}, error) {
+    location := this.ApplyPathPrefix(path)
 
     file, openErr := os.Open(location)
     if openErr != nil {
@@ -214,8 +214,8 @@ func (sys *Local) Read(path string) (map[string]interface{}, error) {
 
 // 读取成文件流
 // 打开文件需要手动关闭
-func (sys *Local) ReadStream(path string) (map[string]interface{}, error) {
-    location := sys.ApplyPathPrefix(path)
+func (this *Local) ReadStream(path string) (map[string]interface{}, error) {
+    location := this.ApplyPathPrefix(path)
 
     stream, err := os.Open(location)
     if err != nil {
@@ -232,11 +232,11 @@ func (sys *Local) ReadStream(path string) (map[string]interface{}, error) {
 }
 
 // 重命名
-func (sys *Local) Rename(path string, newpath string) error {
-    location := sys.ApplyPathPrefix(path)
-    destination := sys.ApplyPathPrefix(newpath)
-    parentDirectory := sys.ApplyPathPrefix(filepath.Dir(newpath))
-    sys.EnsureDirectory(parentDirectory)
+func (this *Local) Rename(path string, newpath string) error {
+    location := this.ApplyPathPrefix(path)
+    destination := this.ApplyPathPrefix(newpath)
+    parentDirectory := this.ApplyPathPrefix(filepath.Dir(newpath))
+    this.EnsureDirectory(parentDirectory)
 
     err := os.Rename(location, destination)
     if err != nil {
@@ -247,10 +247,10 @@ func (sys *Local) Rename(path string, newpath string) error {
 }
 
 // 复制
-func (sys *Local) Copy(path string, newpath string) error {
-    location := sys.ApplyPathPrefix(path)
-    destination := sys.ApplyPathPrefix(newpath)
-    sys.EnsureDirectory(filepath.Dir(destination))
+func (this *Local) Copy(path string, newpath string) error {
+    location := this.ApplyPathPrefix(path)
+    destination := this.ApplyPathPrefix(newpath)
+    this.EnsureDirectory(filepath.Dir(destination))
 
     locationStat, e := os.Stat(location)
     if e != nil {
@@ -282,10 +282,10 @@ func (sys *Local) Copy(path string, newpath string) error {
 }
 
 // 删除
-func (sys *Local) Delete(path string) error {
-    location := sys.ApplyPathPrefix(path)
+func (this *Local) Delete(path string) error {
+    location := this.ApplyPathPrefix(path)
 
-    if !sys.IsFile(location) {
+    if !this.IsFile(location) {
         return errors.New("文件删除失败, 当前文件不是文件类型")
     }
 
@@ -297,10 +297,10 @@ func (sys *Local) Delete(path string) error {
 }
 
 // 删除文件夹
-func (sys *Local) DeleteDir(dirname string) error {
-    location := sys.ApplyPathPrefix(dirname)
+func (this *Local) DeleteDir(dirname string) error {
+    location := this.ApplyPathPrefix(dirname)
 
-    if !sys.IsDir(location) {
+    if !this.IsDir(location) {
         return errors.New("文件夹删除失败, 当前文件不是文件夹类型")
     }
 
@@ -312,17 +312,17 @@ func (sys *Local) DeleteDir(dirname string) error {
 }
 
 // 创建文件夹
-func (sys *Local) CreateDir(dirname string, config interfaces.Config) (map[string]string, error) {
-    location := sys.ApplyPathPrefix(dirname)
+func (this *Local) CreateDir(dirname string, config interfaces.Config) (map[string]string, error) {
+    location := this.ApplyPathPrefix(dirname)
 
     visibility := config.GetDefault("visibility", "public").(string)
 
-    err := os.MkdirAll(location, sys.FormatPerm(permissionMap["dir"][visibility]))
+    err := os.MkdirAll(location, this.FormatPerm(permissionMap["dir"][visibility]))
     if err != nil {
         return nil, errors.New("执行函数 os.MkdirAll() 失败, 错误为:" + err.Error())
     }
 
-    if !sys.IsDir(location) {
+    if !this.IsDir(location) {
         return nil, errors.New("文件夹创建失败")
     }
 
@@ -335,23 +335,23 @@ func (sys *Local) CreateDir(dirname string, config interfaces.Config) (map[strin
 }
 
 // 列出内容
-func (sys *Local) ListContents(directory string, recursive ...bool) ([]map[string]interface{}, error) {
-    location := sys.ApplyPathPrefix(directory)
+func (this *Local) ListContents(directory string, recursive ...bool) ([]map[string]interface{}, error) {
+    location := this.ApplyPathPrefix(directory)
 
-    if !sys.IsDir(location) {
+    if !this.IsDir(location) {
         return []map[string]interface{}{}, nil
     }
 
     var iterator []map[string]interface{}
     if len(recursive) > 0 && recursive[0] {
-        iterator, _ = sys.GetRecursiveDirectoryIterator(location)
+        iterator, _ = this.GetRecursiveDirectoryIterator(location)
     } else {
-        iterator, _ = sys.GetDirectoryIterator(location)
+        iterator, _ = this.GetDirectoryIterator(location)
     }
 
     var result []map[string]interface{}
     for _, file := range iterator {
-        path, _ := sys.NormalizeFileInfo(file)
+        path, _ := this.NormalizeFileInfo(file)
 
         result = append(result, path)
     }
@@ -359,20 +359,20 @@ func (sys *Local) ListContents(directory string, recursive ...bool) ([]map[strin
     return result, nil
 }
 
-func (sys *Local) GetMetadata(path string) (map[string]interface{}, error) {
-    location := sys.ApplyPathPrefix(path)
+func (this *Local) GetMetadata(path string) (map[string]interface{}, error) {
+    location := this.ApplyPathPrefix(path)
 
-    info := sys.FileInfo(location)
+    info := this.FileInfo(location)
 
-    return sys.NormalizeFileInfo(info)
+    return this.NormalizeFileInfo(info)
 }
 
-func (sys *Local) GetSize(path string) (map[string]interface{}, error) {
-    return sys.GetMetadata(path)
+func (this *Local) GetSize(path string) (map[string]interface{}, error) {
+    return this.GetMetadata(path)
 }
 
-func (sys *Local) GetMimetype(path string) (map[string]interface{}, error) {
-    location := sys.ApplyPathPrefix(path)
+func (this *Local) GetMimetype(path string) (map[string]interface{}, error) {
+    location := this.ApplyPathPrefix(path)
 
     f, err := os.Open(location)
     if err != nil {
@@ -395,20 +395,20 @@ func (sys *Local) GetMimetype(path string) (map[string]interface{}, error) {
     }, nil
 }
 
-func (sys *Local) GetTimestamp(path string) (map[string]interface{}, error) {
-    return sys.GetMetadata(path)
+func (this *Local) GetTimestamp(path string) (map[string]interface{}, error) {
+    return this.GetMetadata(path)
 }
 
 // 设置文件的权限
-func (sys *Local) GetVisibility(path string) (map[string]string, error) {
-    location := sys.ApplyPathPrefix(path)
+func (this *Local) GetVisibility(path string) (map[string]string, error) {
+    location := this.ApplyPathPrefix(path)
 
     pathType := "file"
-    if !sys.IsFile(location) {
+    if !this.IsFile(location) {
         pathType = "dir"
     }
 
-    permissions, _ := sys.FileMode(location)
+    permissions, _ := this.FileMode(location)
 
     for visibility, visibilityPermissions := range permissionMap[pathType] {
         if visibilityPermissions == permissions {
@@ -430,11 +430,11 @@ func (sys *Local) GetVisibility(path string) (map[string]string, error) {
 }
 
 // 设置文件的权限
-func (sys *Local) SetVisibility(path string, visibility string) (map[string]string, error) {
-    location := sys.ApplyPathPrefix(path)
+func (this *Local) SetVisibility(path string, visibility string) (map[string]string, error) {
+    location := this.ApplyPathPrefix(path)
 
     pathType := "file"
-    if !sys.IsFile(location) {
+    if !this.IsFile(location) {
         pathType = "dir"
     }
 
@@ -442,7 +442,7 @@ func (sys *Local) SetVisibility(path string, visibility string) (map[string]stri
         visibility = "public"
     }
 
-    e := os.Chmod(location, sys.FormatPerm(permissionMap[pathType][visibility]))
+    e := os.Chmod(location, this.FormatPerm(permissionMap[pathType][visibility]))
     if e != nil {
         return nil, errors.New("设置文件权限失败")
     }
@@ -456,12 +456,12 @@ func (sys *Local) SetVisibility(path string, visibility string) (map[string]stri
 }
 
 // NormalizeFileInfo
-func (sys *Local) NormalizeFileInfo(file map[string]interface{}) (map[string]interface{}, error) {
-    return sys.MapFileInfo(file)
+func (this *Local) NormalizeFileInfo(file map[string]interface{}) (map[string]interface{}, error) {
+    return this.MapFileInfo(file)
 }
 
 // 是否可读
-func (sys *Local) GuardAgainstUnreadableFileInfo(fp string) error {
+func (this *Local) GuardAgainstUnreadableFileInfo(fp string) error {
     _, err := os.ReadFile(fp)
     if err != nil {
         return err
@@ -471,7 +471,7 @@ func (sys *Local) GuardAgainstUnreadableFileInfo(fp string) error {
 }
 
 // 获取全部文件
-func (sys *Local) GetRecursiveDirectoryIterator(path string) ([]map[string]interface{}, error) {
+func (this *Local) GetRecursiveDirectoryIterator(path string) ([]map[string]interface{}, error) {
     var files []map[string]interface{}
     err := filepath.Walk(path, func(wpath string, info os.FileInfo, err error) error {
         var fileType string
@@ -500,7 +500,7 @@ func (sys *Local) GetRecursiveDirectoryIterator(path string) ([]map[string]inter
 }
 
 // 一级目录索引
-func (sys *Local) GetDirectoryIterator(path string) ([]map[string]interface{}, error) {
+func (this *Local) GetDirectoryIterator(path string) ([]map[string]interface{}, error) {
     fs, err := os.ReadDir(path)
     if err != nil {
         return []map[string]interface{}{}, err
@@ -539,7 +539,7 @@ func (sys *Local) GetDirectoryIterator(path string) ([]map[string]interface{}, e
     return ret, nil
 }
 
-func (sys *Local) FileInfo(path string) map[string]interface{} {
+func (this *Local) FileInfo(path string) map[string]interface{} {
     info, e := os.Stat(path)
     if e != nil {
         return nil
@@ -562,17 +562,17 @@ func (sys *Local) FileInfo(path string) map[string]interface{} {
     }
 }
 
-func (sys *Local) GetFilePath(file map[string]interface{}) string {
+func (this *Local) GetFilePath(file map[string]interface{}) string {
     location := file["pathname"].(string)
-    path := sys.RemovePathPrefix(location)
+    path := this.RemovePathPrefix(location)
     return strings.Trim(strings.Replace(path, "\\", "/", -1), "/")
 }
 
 // 获取全部文件
-func (sys *Local) MapFileInfo(data map[string]interface{}) (map[string]interface{}, error) {
+func (this *Local) MapFileInfo(data map[string]interface{}) (map[string]interface{}, error) {
     normalized := map[string]interface{}{
         "type": data["type"],
-        "path": sys.GetFilePath(data),
+        "path": this.GetFilePath(data),
         "timestamp": data["timestamp"],
     }
 
@@ -583,11 +583,11 @@ func (sys *Local) MapFileInfo(data map[string]interface{}) (map[string]interface
     return normalized, nil
 }
 
-func (sys *Local) IsFile(fp string) bool {
-    return !sys.IsDir(fp)
+func (this *Local) IsFile(fp string) bool {
+    return !this.IsDir(fp)
 }
 
-func (sys *Local) IsDir(fp string) bool {
+func (this *Local) IsDir(fp string) bool {
     f, e := os.Stat(fp)
     if e != nil {
         return false
@@ -596,7 +596,7 @@ func (sys *Local) IsDir(fp string) bool {
     return f.IsDir()
 }
 
-func (sys *Local) FileSize(fp string) (int64, error) {
+func (this *Local) FileSize(fp string) (int64, error) {
     f, e := os.Stat(fp)
     if e != nil {
         return 0, e
@@ -605,7 +605,7 @@ func (sys *Local) FileSize(fp string) (int64, error) {
 }
 
 // 文件权限
-func (sys *Local) FileMode(fp string) (uint32, error) {
+func (this *Local) FileMode(fp string) (uint32, error) {
     f, e := os.Stat(fp)
     if e != nil {
         return 0, e
@@ -619,23 +619,23 @@ func (sys *Local) FileMode(fp string) (uint32, error) {
 /**
  * 权限格式化
  */
-func (sys *Local) FormatPerm(i uint32) os.FileMode {
+func (this *Local) FormatPerm(i uint32) os.FileMode {
     // 八进制转成十进制
     // p, _ := strconv.ParseInt(strconv.Itoa(i), 8, 0)
     return os.FileMode(i)
 }
 
 // 软链接
-func (sys *Local) Symlink(target, link string) error {
+func (this *Local) Symlink(target, link string) error {
     return os.Symlink(target, link)
 }
 
 // 读取链接
-func (sys *Local) Readlink(link string) (string, error) {
+func (this *Local) Readlink(link string) (string, error) {
     return os.Readlink(link)
 }
 
 // 是否为软链接
-func (sys *Local) IsSymlink(m os.FileMode) bool {
+func (this *Local) IsSymlink(m os.FileMode) bool {
     return m&os.ModeSymlink != 0
 }

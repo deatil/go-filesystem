@@ -19,29 +19,29 @@ type Abstract struct {
 }
 
 // 设置前缀
-func (at *Abstract) SetPathPrefix(prefix string) {
+func (this *Abstract) SetPathPrefix(prefix string) {
     if prefix == "" {
-        at.pathPrefix = ""
+        this.pathPrefix = ""
 
         return
     }
 
-    at.pathSeparator = "/"
-    at.pathPrefix = strings.TrimSuffix(prefix, "/") + at.pathSeparator
+    this.pathSeparator = "/"
+    this.pathPrefix = strings.TrimSuffix(prefix, "/") + this.pathSeparator
 }
 
 // 获取前缀
-func (at *Abstract) GetPathPrefix() string {
-    return at.pathPrefix
+func (this *Abstract) GetPathPrefix() string {
+    return this.pathPrefix
 }
 
 // 添加前缀
-func (at *Abstract) ApplyPathPrefix(path string) string {
-    return at.GetPathPrefix() + strings.TrimPrefix(path, "/")
+func (this *Abstract) ApplyPathPrefix(path string) string {
+    return this.GetPathPrefix() + strings.TrimPrefix(path, "/")
 }
 
 // 移除前缀
-func (at *Abstract) RemovePathPrefix(path string) string {
-    prefix := at.GetPathPrefix()
+func (this *Abstract) RemovePathPrefix(path string) string {
+    prefix := this.GetPathPrefix()
     return strings.TrimPrefix(path, prefix)
 }
