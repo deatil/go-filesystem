@@ -11,6 +11,13 @@
 *  `local`: 本地存储
 
 
+### 下载安装
+
+~~~go
+go get -u github.com/deatil/go-filesystem
+~~~
+
+
 ### 示例
 
 ~~~go
@@ -23,10 +30,10 @@ func init() {
     // 根目录
     root := "/storage"
     adapter := localAdapter.New(root)
-    
+
     // 格式为 map[string]interface{}
     adapterConf := ...
-    
+
     // 磁盘
     fs := filesystem.New(adapter, adapterConf)
 
