@@ -11,9 +11,9 @@ import(
  * @create 2021-8-1
  * @author deatil
  */
-type Fllesystem interface {
+type Filesystem interface {
     // 设置配置
-    SetConfig(Config)
+    WithConfig(Config)
 
     // 获取配置
     GetConfig() Config
@@ -22,13 +22,13 @@ type Fllesystem interface {
     PrepareConfig(map[string]any) Config
 
     // 设置适配器
-    WithAdapter(Adapter) Fllesystem
+    WithAdapter(Adapter) Filesystem
 
     // 获取适配器
     GetAdapter() Adapter
 
     // 获取
-    GetFllesystem() Fllesystem
+    GetFilesystem() Filesystem
 
     // 判断
     Has(string) bool
@@ -97,5 +97,5 @@ type Fllesystem interface {
     GetMetadata(string) (map[string]any, error)
 
     // 获取
-    Get(string, ...func(Fllesystem, string) any) any
+    Get(string, ...func(Filesystem, string) any) any
 }

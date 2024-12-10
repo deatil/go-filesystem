@@ -4,15 +4,6 @@ import(
     "github.com/deatil/go-filesystem/filesystem/interfaces"
 )
 
-/**
- * 构造函数
- */
-func New(data DataMap) Config {
-    return Config{
-        Data: data,
-    }
-}
-
 type (
     // 配置 map
     DataMap = map[string]any
@@ -27,6 +18,15 @@ type (
 type Config struct {
     // 数据
     Data DataMap
+}
+
+/**
+ * 构造函数
+ */
+func New(data DataMap) Config {
+    return Config{
+        Data: data,
+    }
 }
 
 /**

@@ -23,13 +23,13 @@ go get -u github.com/deatil/go-filesystem
 ~~~go
 import (
     "github.com/deatil/go-filesystem/filesystem"
-    localAdapter "github.com/deatil/go-filesystem/filesystem/adapter/local"
+    local_adapter "github.com/deatil/go-filesystem/filesystem/adapter/local"
 )
 
 func goFilesystem() {
     // 根目录
     root := "/storage"
-    adapter := localAdapter.New(root)
+    adapter := local_adapter.New(root)
 
     // 磁盘
     fs := filesystem.New(adapter)

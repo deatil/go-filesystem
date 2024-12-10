@@ -1,17 +1,5 @@
 package filesystem
 
-// new 文件管理器
-func NewDirectory(filesystem *Fllesystem, path ...string) *Directory {
-    fs := &Directory{}
-    fs.filesystem = filesystem
-
-    if len(path) > 0{
-        fs.path = path[0]
-    }
-
-    return fs
-}
-
 /**
  * 文件管理器文件夹操作扩展
  *
@@ -22,8 +10,20 @@ type Directory struct {
     Handler
 }
 
+// new 文件管理器
+func NewDirectory(filesystem *Filesystem, path ...string) *Directory {
+    fs := &Directory{}
+    fs.filesystem = filesystem
+
+    if len(path) > 0{
+        fs.path = path[0]
+    }
+
+    return fs
+}
+
 // 设置管理器
-func (this *Directory) SetFilesystem(filesystem *Fllesystem) *Directory {
+func (this *Directory) SetFilesystem(filesystem *Filesystem) *Directory {
     this.filesystem = filesystem
 
     return this

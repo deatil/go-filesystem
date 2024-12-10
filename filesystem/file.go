@@ -5,18 +5,6 @@ import(
     "os"
 )
 
-// new 文件管理器
-func NewFile(filesystem *Fllesystem, path ...string) *File {
-    fs := &File{}
-    fs.filesystem = filesystem
-
-    if len(path) > 0{
-        fs.path = path[0]
-    }
-
-    return fs
-}
-
 /**
  * 文件管理扩展
  *
@@ -27,8 +15,20 @@ type File struct {
     Handler
 }
 
+// new 文件管理器
+func NewFile(filesystem *Filesystem, path ...string) *File {
+    fs := &File{}
+    fs.filesystem = filesystem
+
+    if len(path) > 0{
+        fs.path = path[0]
+    }
+
+    return fs
+}
+
 // 设置管理器
-func (this *File) SetFilesystem(filesystem *Fllesystem) *File {
+func (this *File) SetFilesystem(filesystem *Filesystem) *File {
     this.filesystem = filesystem
 
     return this
