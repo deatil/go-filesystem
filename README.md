@@ -35,7 +35,9 @@ func goFilesystem() {
     fs := filesystem.New(adapter)
 
     // 使用
-    fs.Write(path string, contents string) (bool, error)
+    path := "/path.txt"
+    contents := []byte("")
+    fs.Write(path, contents) (bool, error)
 }
 ~~~
 
