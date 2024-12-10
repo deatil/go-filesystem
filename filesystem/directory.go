@@ -23,14 +23,14 @@ func NewDirectory(filesystem *Filesystem, path ...string) *Directory {
 }
 
 // 设置管理器
-func (this *Directory) SetFilesystem(filesystem *Filesystem) *Directory {
+func (this *Directory) WithFilesystem(filesystem *Filesystem) *Directory {
     this.filesystem = filesystem
 
     return this
 }
 
 // 设置目录
-func (this *Directory) SetPath(path string) *Directory {
+func (this *Directory) WithPath(path string) *Directory {
     this.path = path
 
     return this

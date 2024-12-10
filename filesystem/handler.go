@@ -8,7 +8,7 @@ package filesystem
  */
 type Handler struct {
     filesystem *Filesystem
-    path string
+    path       string
 }
 
 // 是否为文件夹

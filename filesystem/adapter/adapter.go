@@ -22,7 +22,7 @@ func (this *Adapter) Has(string) bool {
 }
 
 // 上传
-func (this *Adapter) Write(path string, contents string, conf interfaces.Config) (map[string]any, error) {
+func (this *Adapter) Write(path string, contents []byte, conf interfaces.Config) (map[string]any, error) {
     panic("go-filesystem: Write does not implement")
 }
 
@@ -32,7 +32,7 @@ func (this *Adapter) WriteStream(path string, stream io.Reader, conf interfaces.
 }
 
 // 更新
-func (this *Adapter) Update(path string, contents string, conf interfaces.Config) (map[string]any, error) {
+func (this *Adapter) Update(path string, contents []byte, conf interfaces.Config) (map[string]any, error) {
     panic("go-filesystem: Update does not implement")
 }
 

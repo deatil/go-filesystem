@@ -1,6 +1,7 @@
 package filesystem_test
 
 import (
+    "bytes"
     "reflect"
     "testing"
 
@@ -94,7 +95,7 @@ func Test_Read(t *testing.T) {
         t.Fatal(err.Error())
     }
 
-    assertEqual(res, "testdata", "Test_Read")
+    assertEqual(string(res), "testdata", "Test_Read")
 }
 
 func Test_GetMimetype(t *testing.T) {
@@ -210,7 +211,7 @@ func Test_Write(t *testing.T) {
     fs := filesystem.New(adapter)
 
     // 使用
-    ok, err := fs.Write("/testcopy.txt", "testtestdata1111111")
+    ok, err := fs.Write("/testcopy.txt", []byte("testtestdata1111111"))
     if !ok {
         t.Fatal(err.Error())
     }
@@ -220,10 +221,10 @@ func Test_Write(t *testing.T) {
         t.Fatal(err.Error())
     }
 
-    assertEqual(res2, "testtestdata1111111", "Test_Write")
+    assertEqual(string(res2), "testtestdata1111111", "Test_Write")
 
     // 使用
-    ok, err = fs.Write("/testcopy.txt", "testdata")
+    ok, err = fs.Write("/testcopy.txt", []byte("testdata"))
     if !ok {
         t.Fatal(err.Error())
     }
@@ -240,7 +241,7 @@ func Test_Put(t *testing.T) {
     fs := filesystem.New(adapter)
 
     // 使用
-    ok, err := fs.Put("/testcopy.txt", "222222222")
+    ok, err := fs.Put("/testcopy.txt", []byte("222222222"))
     if !ok {
         t.Fatal(err.Error())
     }
@@ -250,10 +251,134 @@ func Test_Put(t *testing.T) {
         t.Fatal(err.Error())
     }
 
-    assertEqual(res2, "222222222", "Test_Put")
+    assertEqual(string(res2), "222222222", "Test_Put")
 
     // 使用
-    ok, err = fs.Write("/testcopy.txt", "testdata")
+    ok, err = fs.Write("/testcopy.txt", []byte("testdata"))
+    if !ok {
+        t.Fatal(err.Error())
+    }
+}
+
+func Test_Prepend(t *testing.T) {
+    assertEqual := assertEqualT(t)
+
+    // 根目录
+    root := "./testdata"
+    adapter := local_adapter.New(root)
+
+    // 磁盘
+    fs := filesystem.New(adapter)
+
+    // 使用
+    ok, err := fs.Prepend("/testcopy.txt", []byte("222222222"))
+    if !ok {
+        t.Fatal(err.Error())
+    }
+
+    res2, err := fs.Read("/testcopy.txt")
+    if err != nil {
+        t.Fatal(err.Error())
+    }
+
+    assertEqual(string(res2), "222222222testdata", "Test_Prepend")
+
+    // 使用
+    ok, err = fs.Write("/testcopy.txt", []byte("testdata"))
+    if !ok {
+        t.Fatal(err.Error())
+    }
+}
+
+func Test_PrependStream(t *testing.T) {
+    assertEqual := assertEqualT(t)
+
+    // 根目录
+    root := "./testdata"
+    adapter := local_adapter.New(root)
+
+    // 磁盘
+    fs := filesystem.New(adapter)
+
+    prependDdata := bytes.NewBuffer([]byte("222222222"))
+
+    // 使用
+    ok, err := fs.PrependStream("/testcopy.txt", prependDdata)
+    if !ok {
+        t.Fatal(err.Error())
+    }
+
+    res2, err := fs.Read("/testcopy.txt")
+    if err != nil {
+        t.Fatal(err.Error())
+    }
+
+    assertEqual(string(res2), "222222222testdata", "Test_PrependStream")
+
+    // 使用
+    ok, err = fs.Write("/testcopy.txt", []byte("testdata"))
+    if !ok {
+        t.Fatal(err.Error())
+    }
+}
+
+func Test_Append(t *testing.T) {
+    assertEqual := assertEqualT(t)
+
+    // 根目录
+    root := "./testdata"
+    adapter := local_adapter.New(root)
+
+    // 磁盘
+    fs := filesystem.New(adapter)
+
+    // 使用
+    ok, err := fs.Append("/testcopy.txt", []byte("222222222"))
+    if !ok {
+        t.Fatal(err.Error())
+    }
+
+    res2, err := fs.Read("/testcopy.txt")
+    if err != nil {
+        t.Fatal(err.Error())
+    }
+
+    assertEqual(string(res2), "testdata222222222", "Test_Append")
+
+    // 使用
+    ok, err = fs.Write("/testcopy.txt", []byte("testdata"))
+    if !ok {
+        t.Fatal(err.Error())
+    }
+}
+
+func Test_AppendStream(t *testing.T) {
+    assertEqual := assertEqualT(t)
+
+    // 根目录
+    root := "./testdata"
+    adapter := local_adapter.New(root)
+
+    // 磁盘
+    fs := filesystem.New(adapter)
+
+    appendData := bytes.NewBuffer([]byte("222222222"))
+
+    // 使用
+    ok, err := fs.AppendStream("/testcopy.txt", appendData)
+    if !ok {
+        t.Fatal(err.Error())
+    }
+
+    res2, err := fs.Read("/testcopy.txt")
+    if err != nil {
+        t.Fatal(err.Error())
+    }
+
+    assertEqual(string(res2), "testdata222222222", "Test_AppendStream")
+
+    // 使用
+    ok, err = fs.Write("/testcopy.txt", []byte("testdata"))
     if !ok {
         t.Fatal(err.Error())
     }

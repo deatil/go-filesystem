@@ -6,24 +6,6 @@ import(
     "strings"
 )
 
-// 文件系统实例化
-func NewMountManager(filesystems ...map[string]any) *MountManager {
-    mm := &MountManager{
-        filesystems: make(FilesystemMap),
-    }
-
-    if len(filesystems) > 0{
-        mm.MountFilesystems(filesystems[0])
-    }
-
-    return mm
-}
-
-type (
-    // 列表
-    FilesystemMap = map[string]*Filesystem
-)
-
 /**
  * 文件系统
  *
@@ -31,7 +13,20 @@ type (
  * @author deatil
  */
 type MountManager struct {
-    filesystems FilesystemMap
+    filesystems map[string]*Filesystem
+}
+
+// 文件系统实例化
+func NewMountManager(filesystems ...map[string]any) *MountManager {
+    mm := &MountManager{
+        filesystems: make(map[string]*Filesystem),
+    }
+
+    if len(filesystems) > 0{
+        mm.MountFilesystems(filesystems[0])
+    }
+
+    return mm
 }
 
 // 批量
@@ -53,7 +48,7 @@ func (this *MountManager) MountFilesystem(prefix string, filesystem *Filesystem)
 // 获取文件管理器
 func (this *MountManager) GetFilesystem(prefix string) *Filesystem {
     if _, ok := this.filesystems[prefix]; !ok {
-        panic("[" + prefix + "]文件管理前缀不存在")
+        panic("go-filesystem: [" + prefix + "] prefix not exists")
     }
 
     return this.filesystems[prefix]
@@ -63,7 +58,7 @@ func (this *MountManager) GetFilesystem(prefix string) *Filesystem {
 // [:prefix, :arguments]
 func (this *MountManager) FilterPrefix(arguments []string) (string, []string) {
     if len(arguments) < 1 {
-        panic("arguments 切片不能为空")
+        panic("go-filesystem: arguments slice not empty")
     }
 
     path := arguments[0]
@@ -83,7 +78,7 @@ func (this *MountManager) GetPrefixAndPath(path string) (string, string) {
     paths := strings.SplitN(path, "://", 2)
 
     if len(paths) < 1 {
-        panic("在 " + path + " 里前缀 prefix 不存在")
+        panic("go-filesystem: " + path + "'prefix not exists")
     }
 
     return paths[0], paths[1]
@@ -168,7 +163,7 @@ func (this *MountManager) Has(path string) bool {
 }
 
 // 文件到字符
-func (this *MountManager) Read(path string) (string, error) {
+func (this *MountManager) Read(path string) ([]byte, error) {
     prefix, newPath := this.GetPrefixAndPath(path)
 
     return this.GetFilesystem(prefix).Read(newPath)
@@ -217,7 +212,7 @@ func (this *MountManager) GetVisibility(path string) (string, error) {
 }
 
 // 写入文件
-func (this *MountManager) Write(path string, contents string, conf ...map[string]any) (bool, error) {
+func (this *MountManager) Write(path string, contents []byte, conf ...map[string]any) (bool, error) {
     prefix, newPath := this.GetPrefixAndPath(path)
 
     return this.GetFilesystem(prefix).Write(newPath, contents, conf...)
@@ -231,7 +226,7 @@ func (this *MountManager) WriteStream(path string, resource io.Reader, conf ...m
 }
 
 // 更新字符
-func (this *MountManager) Update(path string, contents string, conf ...map[string]any) (bool, error) {
+func (this *MountManager) Update(path string, contents []byte, conf ...map[string]any) (bool, error) {
     prefix, newPath := this.GetPrefixAndPath(path)
 
     return this.GetFilesystem(prefix).Update(newPath, contents, conf...)
@@ -280,7 +275,7 @@ func (this *MountManager) SetVisibility(path string, visibility string) (bool, e
 }
 
 // 更新
-func (this *MountManager) Put(path string, contents string, conf ...map[string]any) (bool, error) {
+func (this *MountManager) Put(path string, contents []byte, conf ...map[string]any) (bool, error) {
     prefix, newPath := this.GetPrefixAndPath(path)
 
     return this.GetFilesystem(prefix).Put(newPath, contents, conf...)
@@ -301,8 +296,8 @@ func (this *MountManager) ReadAndDelete(path string) (any, error) {
 }
 
 // 获取
-// Get("file.txt").(*fllesystem.File).Read()
-// Get("/file").(*fllesystem.Directory).Read()
+// file := Get("/file.txt").(*File)
+// dir := Get("/dir").(*Directory)
 func (this *MountManager) Get(path string, handler ...func(*Filesystem, string) any) any {
     prefix, newPath := this.GetPrefixAndPath(path)
 

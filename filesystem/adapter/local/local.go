@@ -9,8 +9,8 @@ import (
     "net/http"
     "path/filepath"
 
-    "github.com/deatil/go-filesystem/filesystem/interfaces"
     "github.com/deatil/go-filesystem/filesystem/adapter"
+    "github.com/deatil/go-filesystem/filesystem/interfaces"
 )
 
 // 权限列表
@@ -72,7 +72,7 @@ func (this *Local) Has(path string) bool {
 }
 
 // 上传
-func (this *Local) Write(path string, contents string, conf interfaces.Config) (map[string]any, error) {
+func (this *Local) Write(path string, contents []byte, conf interfaces.Config) (map[string]any, error) {
     location := this.ApplyPathPrefix(path)
     this.EnsureDirectory(filepath.Dir(location))
 
@@ -83,9 +83,9 @@ func (this *Local) Write(path string, contents string, conf interfaces.Config) (
 
     defer out.Close()
 
-    _, writeErr := out.WriteString(contents)
+    _, writeErr := out.Write(contents)
     if writeErr != nil {
-        return nil, errors.New("go-filesystem: exec os.WriteString() fail, error: " + writeErr.Error())
+        return nil, errors.New("go-filesystem: exec os.Write() fail, error: " + writeErr.Error())
     }
 
     size, sizeErr := this.FileSize(location)
@@ -139,7 +139,7 @@ func (this *Local) WriteStream(path string, stream io.Reader, conf interfaces.Co
 }
 
 // 更新
-func (this *Local) Update(path string, contents string, conf interfaces.Config) (map[string]any, error) {
+func (this *Local) Update(path string, contents []byte, conf interfaces.Config) (map[string]any, error) {
     location := this.ApplyPathPrefix(path)
 
     out, createErr := os.Create(location)
@@ -149,9 +149,9 @@ func (this *Local) Update(path string, contents string, conf interfaces.Config) 
 
     defer out.Close()
 
-    _, writeErr := out.WriteString(contents)
+    _, writeErr := out.Write(contents)
     if writeErr != nil {
-        return nil, errors.New("go-filesystem: exec os.WriteString() fail, error: " + writeErr.Error())
+        return nil, errors.New("go-filesystem: exec os.Write() fail, error: " + writeErr.Error())
     }
 
     size, sizeErr := this.FileSize(location)
@@ -183,18 +183,16 @@ func (this *Local) UpdateStream(path string, stream io.Reader, config interfaces
 func (this *Local) Read(path string) (map[string]any, error) {
     location := this.ApplyPathPrefix(path)
 
-    file, openErr := os.Open(location)
-    if openErr != nil {
-        return nil, errors.New("go-filesystem: exec os.Open() fail, error: " + openErr.Error())
+    file, err := os.Open(location)
+    if err != nil {
+        return nil, errors.New("go-filesystem: exec os.Open() fail, error: " + err.Error())
     }
     defer file.Close()
 
-    data, readAllErr := io.ReadAll(file)
-    if readAllErr != nil {
-        return nil, errors.New("go-filesystem: exec io.ReadAll() fail, error: " + readAllErr.Error())
+    contents, err := io.ReadAll(file)
+    if err != nil {
+        return nil, errors.New("go-filesystem: exec io.ReadAll() fail, error: " + err.Error())
     }
-
-    contents := fmt.Sprintf("%s", data)
 
     return map[string]any{
         "type":     "file",
@@ -227,6 +225,7 @@ func (this *Local) Rename(path string, newpath string) error {
     location := this.ApplyPathPrefix(path)
     destination := this.ApplyPathPrefix(newpath)
     parentDirectory := this.ApplyPathPrefix(filepath.Dir(newpath))
+
     this.EnsureDirectory(parentDirectory)
 
     err := os.Rename(location, destination)
@@ -624,14 +623,6 @@ func (this *Local) FileMode(fp string) (uint32, error) {
     return uint32(perm), nil
 }
 
-// 权限格式化
-// Format Perm
-func (this *Local) FormatPerm(i uint32) os.FileMode {
-    // 八进制转成十进制
-    // p, _ := strconv.ParseInt(strconv.Itoa(i), 8, 0)
-    return os.FileMode(i)
-}
-
 // 软链接
 // Symlink
 func (this *Local) Symlink(target, link string) error {
@@ -648,4 +639,12 @@ func (this *Local) Readlink(link string) (string, error) {
 // IsSymlink
 func (this *Local) IsSymlink(m os.FileMode) bool {
     return m&os.ModeSymlink != 0
+}
+
+// 权限格式化
+// Format Perm
+func (this *Local) FormatPerm(i uint32) os.FileMode {
+    // 八进制转成十进制
+    // p, _ := strconv.ParseInt(strconv.Itoa(i), 8, 0)
+    return os.FileMode(i)
 }
