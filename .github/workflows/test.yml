@@ -7,12 +7,12 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  test_only:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        goVer: ['1.20', '1.21', '1.22', '1.23']
+        goVer: ['1.25', '1.26', '1.27']
 
     steps:
       - name: Checkout
@@ -32,10 +32,35 @@ jobs:
         run: go mod tidy
 
       - name: Unit tests
-        run: go test -short -covermode=atomic -coverprofile=cover.out ./...
+        run: go test -short -covermode=atomic ./...
 
       - name: Test Generic
         run: go test -short -tags=purego -covermode=atomic ./...
+
+  test_cover:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set timezone
+        uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Asia/Shanghai"
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27'
+
+      - name: Go mod tidy
+        run: go mod tidy
+
+      - name: Unit tests
+        run: go test -short -covermode=atomic -coverprofile=cover.out ./...
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3

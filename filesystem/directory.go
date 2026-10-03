@@ -7,41 +7,40 @@ package filesystem
  * @author deatil
  */
 type Directory struct {
-    Handler
+	Handler
 }
 
-// new 文件管理器
 func NewDirectory(filesystem *Filesystem, path ...string) *Directory {
-    fs := &Directory{}
-    fs.filesystem = filesystem
+	fs := &Directory{}
+	fs.filesystem = filesystem
 
-    if len(path) > 0{
-        fs.path = path[0]
-    }
+	if len(path) > 0 {
+		fs.path = path[0]
+	}
 
-    return fs
+	return fs
 }
 
 // 设置管理器
 func (this *Directory) WithFilesystem(filesystem *Filesystem) *Directory {
-    this.filesystem = filesystem
+	this.filesystem = filesystem
 
-    return this
+	return this
 }
 
 // 设置目录
 func (this *Directory) WithPath(path string) *Directory {
-    this.path = path
+	this.path = path
 
-    return this
+	return this
 }
 
 // 删除文件夹
 func (this *Directory) Delete() (bool, error) {
-    return this.filesystem.DeleteDir(this.path)
+	return this.filesystem.DeleteDir(this.path)
 }
 
 // 列出文件
 func (this *Directory) GetContents(recursive ...bool) ([]map[string]any, error) {
-    return this.filesystem.ListContents(this.path, recursive...)
+	return this.filesystem.ListContents(this.path, recursive...)
 }
