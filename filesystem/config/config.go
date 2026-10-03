@@ -5,13 +5,12 @@ import (
 )
 
 /**
- * 配置
+ * Config
  *
  * @create 2021-8-1
  * @author deatil
  */
 type Config struct {
-	// 数据
 	data map[string]any
 }
 
@@ -21,21 +20,18 @@ func New(data map[string]any) Config {
 	}
 }
 
-// 覆盖旧数据
 func (this Config) With(data map[string]any) interfaces.Config {
 	this.data = data
 
 	return this
 }
 
-// 设置单个新数据
 func (this Config) Set(key string, value any) interfaces.Config {
 	this.data[key] = value
 
 	return this
 }
 
-// 是否存在
 func (this Config) Has(key string) bool {
 	if _, ok := this.data[key]; ok {
 		return true
@@ -44,7 +40,6 @@ func (this Config) Has(key string) bool {
 	return false
 }
 
-// 获取一个带默认的值
 func (this Config) Get(key string, defaults ...any) any {
 	if data, ok := this.data[key]; ok {
 		return data

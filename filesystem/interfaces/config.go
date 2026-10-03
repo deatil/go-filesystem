@@ -1,21 +1,21 @@
 package interfaces
 
 /**
- * 配置接口
+ * Config interface
  *
  * @create 2021-8-1
  * @author deatil
  */
 type Config interface {
-	// 覆盖旧数据
+	// With data
 	With(map[string]any) Config
 
-	// 设置单个新数据
+	// Set kv dta
 	Set(string, any) Config
 
-	// 是否存在
+	// Has
 	Has(string) bool
 
-	// 获取一个带默认的值
+	// Get one data
 	Get(string, ...any) any
 }

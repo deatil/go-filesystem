@@ -13,7 +13,6 @@ import (
 	"github.com/deatil/go-filesystem/filesystem/interfaces"
 )
 
-// 权限列表
 var permissionMap map[string]map[string]uint32 = map[string]map[string]uint32{
 	"file": {
 		"public":  0644,
@@ -26,20 +25,17 @@ var permissionMap map[string]map[string]uint32 = map[string]map[string]uint32{
 }
 
 /**
- * 本地文件适配器 / Local adapter
+ * Local adapter
  *
  * @create 2021-8-1
  * @author deatil
  */
 type Local struct {
-	// 默认适配器基类
 	adapter.Adapter
 
-	// 权限
 	visibility string
 }
 
-// 本地文件适配器
 func New(root string) *Local {
 	local := &Local{}
 
@@ -49,7 +45,6 @@ func New(root string) *Local {
 	return local
 }
 
-// 确认文件夹
 func (this *Local) EnsureDirectory(root string) error {
 	err := os.MkdirAll(root, this.formatPerm(permissionMap["dir"]["public"]))
 	if err != nil {
@@ -63,7 +58,6 @@ func (this *Local) EnsureDirectory(root string) error {
 	return nil
 }
 
-// 判断是否存在
 func (this *Local) Has(path string) bool {
 	location := this.ApplyPathPrefix(path)
 
@@ -71,7 +65,6 @@ func (this *Local) Has(path string) bool {
 	return err == nil || os.IsExist(err)
 }
 
-// 上传
 func (this *Local) Write(path string, contents []byte, conf interfaces.Config) (map[string]any, error) {
 	location := this.ApplyPathPrefix(path)
 	this.EnsureDirectory(filepath.Dir(location))
@@ -108,7 +101,6 @@ func (this *Local) Write(path string, contents []byte, conf interfaces.Config) (
 	return result, nil
 }
 
-// 上传 Stream 文件类型
 func (this *Local) WriteStream(path string, stream io.Reader, conf interfaces.Config) (map[string]any, error) {
 	location := this.ApplyPathPrefix(path)
 	this.EnsureDirectory(filepath.Dir(location))
@@ -138,7 +130,6 @@ func (this *Local) WriteStream(path string, stream io.Reader, conf interfaces.Co
 	return result, nil
 }
 
-// 更新
 func (this *Local) Update(path string, contents []byte, conf interfaces.Config) (map[string]any, error) {
 	location := this.ApplyPathPrefix(path)
 
@@ -174,12 +165,10 @@ func (this *Local) Update(path string, contents []byte, conf interfaces.Config) 
 	return result, nil
 }
 
-// 更新
 func (this *Local) UpdateStream(path string, stream io.Reader, config interfaces.Config) (map[string]any, error) {
 	return this.WriteStream(path, stream, config)
 }
 
-// 读取
 func (this *Local) Read(path string) (map[string]any, error) {
 	location := this.ApplyPathPrefix(path)
 
@@ -201,8 +190,6 @@ func (this *Local) Read(path string) (map[string]any, error) {
 	}, nil
 }
 
-// 读取成文件流
-// 打开文件需要手动关闭
 func (this *Local) ReadStream(path string) (map[string]any, error) {
 	location := this.ApplyPathPrefix(path)
 
@@ -220,7 +207,6 @@ func (this *Local) ReadStream(path string) (map[string]any, error) {
 	}, nil
 }
 
-// 重命名
 func (this *Local) Rename(path string, newpath string) error {
 	location := this.ApplyPathPrefix(path)
 	destination := this.ApplyPathPrefix(newpath)
@@ -236,7 +222,6 @@ func (this *Local) Rename(path string, newpath string) error {
 	return nil
 }
 
-// 复制
 func (this *Local) Copy(path string, newpath string) error {
 	location := this.ApplyPathPrefix(path)
 	destination := this.ApplyPathPrefix(newpath)
@@ -272,7 +257,6 @@ func (this *Local) Copy(path string, newpath string) error {
 	return nil
 }
 
-// 删除
 func (this *Local) Delete(path string) error {
 	location := this.ApplyPathPrefix(path)
 
@@ -287,7 +271,6 @@ func (this *Local) Delete(path string) error {
 	return nil
 }
 
-// 删除文件夹
 func (this *Local) DeleteDir(dirname string) error {
 	location := this.ApplyPathPrefix(dirname)
 
@@ -302,7 +285,6 @@ func (this *Local) DeleteDir(dirname string) error {
 	return nil
 }
 
-// 创建文件夹
 func (this *Local) CreateDir(dirname string, config interfaces.Config) (map[string]string, error) {
 	location := this.ApplyPathPrefix(dirname)
 
@@ -325,7 +307,6 @@ func (this *Local) CreateDir(dirname string, config interfaces.Config) (map[stri
 	return data, nil
 }
 
-// 列出内容
 func (this *Local) ListContents(directory string, recursive ...bool) ([]map[string]any, error) {
 	location := this.ApplyPathPrefix(directory)
 
@@ -371,7 +352,6 @@ func (this *Local) GetMimetype(path string) (map[string]any, error) {
 	}
 	defer f.Close()
 
-	// 头部字节
 	buffer := make([]byte, 32)
 	if _, err := f.Read(buffer); err != nil {
 		return nil, err
@@ -390,7 +370,6 @@ func (this *Local) GetTimestamp(path string) (map[string]any, error) {
 	return this.GetMetadata(path)
 }
 
-// 设置文件的权限
 func (this *Local) GetVisibility(path string) (map[string]string, error) {
 	location := this.ApplyPathPrefix(path)
 
@@ -420,7 +399,6 @@ func (this *Local) GetVisibility(path string) (map[string]string, error) {
 	return data, nil
 }
 
-// 设置文件的权限
 func (this *Local) SetVisibility(path string, visibility string) (map[string]string, error) {
 	location := this.ApplyPathPrefix(path)
 
@@ -451,7 +429,6 @@ func (this *Local) normalizeFileInfo(info map[string]any) (map[string]any, error
 	return this.mapFileInfo(info)
 }
 
-// 获取全部文件
 func (this *Local) getRecursiveDirectoryIterator(path string) ([]map[string]any, error) {
 	var files []map[string]any
 	err := filepath.Walk(path, func(wpath string, info os.FileInfo, err error) error {
@@ -480,7 +457,6 @@ func (this *Local) getRecursiveDirectoryIterator(path string) ([]map[string]any,
 	return files, nil
 }
 
-// 一级目录索引
 // dir index
 func (this *Local) getDirectoryIterator(path string) ([]map[string]any, error) {
 	fs, err := os.ReadDir(path)
@@ -553,8 +529,6 @@ func (this *Local) getFilePath(file map[string]any) string {
 	return strings.Trim(strings.Replace(path, "\\", "/", -1), "/")
 }
 
-// 获取全部文件
-// get all file
 func (this *Local) mapFileInfo(data map[string]any) (map[string]any, error) {
 	normalized := map[string]any{
 		"type":      data["type"],
@@ -601,7 +575,6 @@ func (this *Local) fileSize(fp string) (int64, error) {
 	return f.Size(), nil
 }
 
-// 文件权限
 // return File Mode
 func (this *Local) fileMode(fp string) (uint32, error) {
 	f, e := os.Stat(fp)
@@ -614,7 +587,6 @@ func (this *Local) fileMode(fp string) (uint32, error) {
 	return uint32(perm), nil
 }
 
-// 权限格式化
 // Format Perm
 func (this *Local) formatPerm(i uint32) os.FileMode {
 	// 八进制转成十进制

@@ -18,14 +18,10 @@ import (
  * @author deatil
  */
 type Filesystem struct {
-	// 适配器 / Adapter
 	adapter interfaces.Adapter
-
-	// 配置 / Config
-	config interfaces.Config
+	config  interfaces.Config
 }
 
-// 文件管理器
 // return a *Filesystem
 func New(adapter interfaces.Adapter, conf ...map[string]any) *Filesystem {
 	fs := &Filesystem{
@@ -39,19 +35,16 @@ func New(adapter interfaces.Adapter, conf ...map[string]any) *Filesystem {
 	return fs
 }
 
-// 设置配置
 // With Config
 func (this *Filesystem) WithConfig(conf interfaces.Config) {
 	this.config = conf
 }
 
-// 获取配置
 // Get Config
 func (this *Filesystem) GetConfig() interfaces.Config {
 	return this.config
 }
 
-// 提前设置配置
 // Prepare Config
 func (this *Filesystem) PrepareConfig(settings map[string]any) interfaces.Config {
 	conf := config.New(settings)
@@ -59,20 +52,17 @@ func (this *Filesystem) PrepareConfig(settings map[string]any) interfaces.Config
 	return conf
 }
 
-// 设置适配器
 // With Adapter
 func (this *Filesystem) WithAdapter(adapters interfaces.Adapter) *Filesystem {
 	this.adapter = adapters
 	return this
 }
 
-// 获取适配器
 // Get Adapter
 func (this *Filesystem) GetAdapter() interfaces.Adapter {
 	return this.adapter
 }
 
-// 判断
 // return true if path exists, else false
 func (this *Filesystem) Has(path string) bool {
 	path = util.NormalizePath(path)
@@ -84,7 +74,6 @@ func (this *Filesystem) Has(path string) bool {
 	return this.adapter.Has(path)
 }
 
-// 写入文件
 // Write contents to path
 func (this *Filesystem) Write(path string, contents []byte, conf ...map[string]any) (bool, error) {
 	path = util.NormalizePath(path)
@@ -103,7 +92,6 @@ func (this *Filesystem) Write(path string, contents []byte, conf ...map[string]a
 	return true, nil
 }
 
-// 写入数据流
 // Write stream resource to path
 func (this *Filesystem) WriteStream(path string, resource io.Reader, conf ...map[string]any) (bool, error) {
 	path = util.NormalizePath(path)
@@ -122,7 +110,6 @@ func (this *Filesystem) WriteStream(path string, resource io.Reader, conf ...map
 	return true, nil
 }
 
-// 更新
 // Put contents to path
 func (this *Filesystem) Put(path string, contents []byte, conf ...map[string]any) (bool, error) {
 	path = util.NormalizePath(path)
@@ -149,7 +136,6 @@ func (this *Filesystem) Put(path string, contents []byte, conf ...map[string]any
 	return true, nil
 }
 
-// 更新数据流
 // Put stream resource to path
 func (this *Filesystem) PutStream(path string, resource io.Reader, conf ...map[string]any) (bool, error) {
 	path = util.NormalizePath(path)
@@ -176,7 +162,6 @@ func (this *Filesystem) PutStream(path string, resource io.Reader, conf ...map[s
 	return true, nil
 }
 
-// 读取并删除
 // read and delete
 func (this *Filesystem) ReadAndDelete(path string) ([]byte, error) {
 	path = util.NormalizePath(path)
@@ -191,8 +176,7 @@ func (this *Filesystem) ReadAndDelete(path string) ([]byte, error) {
 	return contents, nil
 }
 
-// 更新字符
-// Update
+// Update data bytes
 func (this *Filesystem) Update(path string, contents []byte, conf ...map[string]any) (bool, error) {
 	path = util.NormalizePath(path)
 
@@ -210,7 +194,6 @@ func (this *Filesystem) Update(path string, contents []byte, conf ...map[string]
 	return true, nil
 }
 
-// 更新数据流
 // Update Stream
 func (this *Filesystem) UpdateStream(path string, resource io.Reader, conf ...map[string]any) (bool, error) {
 	path = util.NormalizePath(path)
@@ -229,7 +212,6 @@ func (this *Filesystem) UpdateStream(path string, resource io.Reader, conf ...ma
 	return true, nil
 }
 
-// 文件头添加
 // Prepend contents
 func (this *Filesystem) Prepend(path string, contents []byte, conf ...map[string]any) (bool, error) {
 	if this.Has(path) {
@@ -244,7 +226,6 @@ func (this *Filesystem) Prepend(path string, contents []byte, conf ...map[string
 	return this.Put(path, contents, conf...)
 }
 
-// 文件头添加数据流
 // Prepend resource Stream
 func (this *Filesystem) PrependStream(path string, resource io.Reader, conf ...map[string]any) (bool, error) {
 	if this.Has(path) {
@@ -268,7 +249,6 @@ func (this *Filesystem) PrependStream(path string, resource io.Reader, conf ...m
 	return this.PutStream(path, resource, conf...)
 }
 
-// 尾部添加
 // Append contents
 func (this *Filesystem) Append(path string, contents []byte, conf ...map[string]any) (bool, error) {
 	if this.Has(path) {
@@ -283,7 +263,6 @@ func (this *Filesystem) Append(path string, contents []byte, conf ...map[string]
 	return this.Put(path, contents, conf...)
 }
 
-// 尾部添加数据流
 // Append resource Stream
 func (this *Filesystem) AppendStream(path string, resource io.Reader, conf ...map[string]any) (bool, error) {
 	if this.Has(path) {
@@ -306,7 +285,6 @@ func (this *Filesystem) AppendStream(path string, resource io.Reader, conf ...ma
 	return this.PutStream(path, resource, conf...)
 }
 
-// 文件到字符
 // Read bytes
 func (this *Filesystem) Read(path string) ([]byte, error) {
 	path = util.NormalizePath(path)
@@ -319,7 +297,6 @@ func (this *Filesystem) Read(path string) ([]byte, error) {
 	return object["contents"].([]byte), nil
 }
 
-// 读取成数据流
 // Read and return Stream
 func (this *Filesystem) ReadStream(path string) (*os.File, error) {
 	path = util.NormalizePath(path)
@@ -332,7 +309,6 @@ func (this *Filesystem) ReadStream(path string) (*os.File, error) {
 	return object["stream"].(*os.File), nil
 }
 
-// 重命名
 // Rename path
 func (this *Filesystem) Rename(path string, newpath string) (bool, error) {
 	path = util.NormalizePath(path)
@@ -345,7 +321,6 @@ func (this *Filesystem) Rename(path string, newpath string) (bool, error) {
 	return true, nil
 }
 
-// 复制
 // Copy path
 func (this *Filesystem) Copy(path string, newpath string) (bool, error) {
 	path = util.NormalizePath(path)
@@ -358,7 +333,6 @@ func (this *Filesystem) Copy(path string, newpath string) (bool, error) {
 	return true, nil
 }
 
-// 删除
 // Delete path
 func (this *Filesystem) Delete(path string) (bool, error) {
 	path = util.NormalizePath(path)
@@ -370,7 +344,6 @@ func (this *Filesystem) Delete(path string) (bool, error) {
 	return true, nil
 }
 
-// 删除文件夹
 // Delete Dir
 func (this *Filesystem) DeleteDir(dirname string) (bool, error) {
 	dirname = util.NormalizePath(dirname)
@@ -385,7 +358,6 @@ func (this *Filesystem) DeleteDir(dirname string) (bool, error) {
 	return true, nil
 }
 
-// 创建文件夹
 // Create Dir
 func (this *Filesystem) CreateDir(dirname string, conf ...map[string]any) (bool, error) {
 	dirname = util.NormalizePath(dirname)
@@ -404,7 +376,6 @@ func (this *Filesystem) CreateDir(dirname string, conf ...map[string]any) (bool,
 	return true, nil
 }
 
-// 列表
 // ListContents
 func (this *Filesystem) ListContents(dirname string, recursive ...bool) ([]map[string]any, error) {
 	dirname = util.NormalizePath(dirname)
@@ -417,7 +388,6 @@ func (this *Filesystem) ListContents(dirname string, recursive ...bool) ([]map[s
 	return result, nil
 }
 
-// 类型
 // GetMimetype
 func (this *Filesystem) GetMimetype(path string) (string, error) {
 	path = util.NormalizePath(path)
@@ -430,7 +400,6 @@ func (this *Filesystem) GetMimetype(path string) (string, error) {
 	return object["mimetype"].(string), nil
 }
 
-// 时间戳
 // GetTimestamp
 func (this *Filesystem) GetTimestamp(path string) (int64, error) {
 	path = util.NormalizePath(path)
@@ -443,7 +412,6 @@ func (this *Filesystem) GetTimestamp(path string) (int64, error) {
 	return object["timestamp"].(int64), nil
 }
 
-// 权限
 // GetVisibility string
 func (this *Filesystem) GetVisibility(path string) (string, error) {
 	path = util.NormalizePath(path)
@@ -456,7 +424,6 @@ func (this *Filesystem) GetVisibility(path string) (string, error) {
 	return object["visibility"], nil
 }
 
-// 大小
 // GetSize
 func (this *Filesystem) GetSize(path string) (int64, error) {
 	path = util.NormalizePath(path)
@@ -469,7 +436,6 @@ func (this *Filesystem) GetSize(path string) (int64, error) {
 	return object["size"].(int64), nil
 }
 
-// 设置权限
 // SetVisibility
 func (this *Filesystem) SetVisibility(path string, visibility string) (bool, error) {
 	path = util.NormalizePath(path)
@@ -481,7 +447,6 @@ func (this *Filesystem) SetVisibility(path string, visibility string) (bool, err
 	return true, nil
 }
 
-// 信息数据
 // Get Metadata
 func (this *Filesystem) GetMetadata(path string) (map[string]any, error) {
 	path = util.NormalizePath(path)
@@ -493,8 +458,6 @@ func (this *Filesystem) GetMetadata(path string) (map[string]any, error) {
 	}
 }
 
-// 获取
-// Get
 // file := Get("/file.txt").(*File)
 // dir := Get("/dir").(*Directory)
 func (this *Filesystem) Get(path string, handler ...func(*Filesystem, string) any) any {
