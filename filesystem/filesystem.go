@@ -294,7 +294,7 @@ func (this *Filesystem) Read(path string) ([]byte, error) {
 }
 
 // Read and return Stream
-func (this *Filesystem) ReadStream(path string) (io.Reader, error) {
+func (this *Filesystem) ReadStream(path string) (io.ReadCloser, error) {
 	path = util.NormalizePath(path)
 	object, err := this.adapter.ReadStream(path)
 
@@ -302,7 +302,7 @@ func (this *Filesystem) ReadStream(path string) (io.Reader, error) {
 		return nil, err
 	}
 
-	if reader, ok := object["stream"].(io.Reader); ok {
+	if reader, ok := object["stream"].(io.ReadCloser); ok {
 		return reader, nil
 	}
 
@@ -420,17 +420,6 @@ func (this *Filesystem) GetTimestamp(path string) (int64, error) {
 	return 0, errors.New("go-filesystem: invalid timestamp type")
 }
 
-// GetVisibility string
-func (this *Filesystem) GetVisibility(path string) (string, error) {
-	path = util.NormalizePath(path)
-	object, err := this.adapter.GetVisibility(path)
-
-	if err != nil {
-		return "", err
-	}
-
-	return object["visibility"], nil
-}
 
 // GetSize
 func (this *Filesystem) GetSize(path string) (int64, error) {
@@ -448,17 +437,6 @@ func (this *Filesystem) GetSize(path string) (int64, error) {
 	return 0, errors.New("go-filesystem: invalid size type")
 }
 
-// SetVisibility
-func (this *Filesystem) SetVisibility(path string, visibility string) (bool, error) {
-	path = util.NormalizePath(path)
-
-	if _, err := this.adapter.SetVisibility(path, visibility); err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
-
 // Get Metadata
 func (this *Filesystem) GetMetadata(path string) (map[string]any, error) {
 	path = util.NormalizePath(path)
@@ -469,6 +447,29 @@ func (this *Filesystem) GetMetadata(path string) (map[string]any, error) {
 	}
 
 	return info, nil
+}
+
+// GetVisibility string
+func (this *Filesystem) GetVisibility(path string) (string, error) {
+	path = util.NormalizePath(path)
+	object, err := this.adapter.GetVisibility(path)
+
+	if err != nil {
+		return "", err
+	}
+
+	return object["visibility"], nil
+}
+
+// SetVisibility
+func (this *Filesystem) SetVisibility(path string, visibility string) (bool, error) {
+	path = util.NormalizePath(path)
+
+	if _, err := this.adapter.SetVisibility(path, visibility); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // file := Get("/file.txt").(*File)

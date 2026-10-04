@@ -27,13 +27,11 @@ func NewFile(filesystem *Filesystem, path ...string) *File {
 
 func (this *File) WithFilesystem(filesystem *Filesystem) *File {
 	this.filesystem = filesystem
-
 	return this
 }
 
 func (this *File) WithPath(path string) *File {
 	this.path = path
-
 	return this
 }
 
@@ -45,7 +43,7 @@ func (this *File) Read() ([]byte, error) {
 	return this.filesystem.Read(this.path)
 }
 
-func (this *File) ReadStream() (io.Reader, error) {
+func (this *File) ReadStream() (io.ReadCloser, error) {
 	return this.filesystem.ReadStream(this.path)
 }
 

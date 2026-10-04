@@ -104,6 +104,8 @@ func (this *MountManager) Copy(from string, to string, conf ...map[string]any) (
 		return false, err
 	}
 
+	defer buffer.Close()
+
 	prefixTo, pathTo := this.GetPrefixAndPath(to)
 
 	result, err2 := this.GetFilesystem(prefixTo).WriteStream(pathTo, buffer, conf...)
@@ -155,7 +157,7 @@ func (this *MountManager) Read(path string) ([]byte, error) {
 	return this.GetFilesystem(prefix).Read(newPath)
 }
 
-func (this *MountManager) ReadStream(path string) (io.Reader, error) {
+func (this *MountManager) ReadStream(path string) (io.ReadCloser, error) {
 	prefix, newPath := this.GetPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).ReadStream(newPath)

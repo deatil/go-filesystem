@@ -25,7 +25,11 @@ func (this *Handler) GetType() string {
 		return "dir"
 	}
 
-	return metadata["type"].(string)
+	if typ, ok := metadata["type"].(string); ok {
+		return typ
+	}
+
+	return "dir"
 }
 
 func (this *Handler) SetFilesystem(filesystem *Filesystem) any {
