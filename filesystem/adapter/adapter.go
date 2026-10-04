@@ -16,7 +16,7 @@ type Adapter struct {
 	Abstract
 }
 
-func (this *Adapter) Has(string) bool {
+func (this *Adapter) Has(path string) bool {
 	return false
 }
 
@@ -54,6 +54,14 @@ func (this *Adapter) Copy(path string, newpath string) error {
 
 func (this *Adapter) Delete(path string) error {
 	panic("go-filesystem: Delete does not implement")
+}
+
+func (this *Adapter) Create(path string, conf interfaces.Config) (map[string]string, error) {
+	panic("go-filesystem: Create does not implement")
+}
+
+func (this *Adapter) CopyDir(path string, newpath string) error {
+	panic("go-filesystem: CopyDir does not implement")
 }
 
 func (this *Adapter) DeleteDir(dirname string) error {

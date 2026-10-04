@@ -97,6 +97,10 @@ func (this *File) Delete() (bool, error) {
 	return this.filesystem.Delete(this.path)
 }
 
+func (this *File) Create(conf ...map[string]any) (bool, error) {
+	return this.filesystem.Create(this.path, conf...)
+}
+
 func (this *File) GetTimestamp() (int64, error) {
 	return this.filesystem.GetTimestamp(this.path)
 }

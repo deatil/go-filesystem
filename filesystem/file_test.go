@@ -367,6 +367,26 @@ func Test_File_Copy(t *testing.T) {
 	assertEqual(res33, false, "Test_Copy Delete after Exists")
 }
 
+func Test_File_Create(t *testing.T) {
+	assertEqual := assertEqualT(t)
+
+	fs := NewFile(getFS())
+
+	_, err := fs.WithPath("/newtestcopy.txt").Create()
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	res2 := fs.WithPath("/newtestcopy.txt").Exists()
+	assertEqual(res2, true, "Test_File_Create Exists")
+
+	res3, _ := fs.WithPath("/newtestcopy.txt").Delete()
+	assertEqual(res3, true, "Test_File_Create Delete")
+
+	res33 := fs.WithPath("/newtestcopy.txt").Exists()
+	assertEqual(res33, false, "Test_File_Create Delete after Exists")
+}
+
 func Test_File_Is(t *testing.T) {
 	assertEqual := assertEqualT(t)
 

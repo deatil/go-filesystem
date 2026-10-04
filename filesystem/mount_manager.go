@@ -16,7 +16,7 @@ type MountManager struct {
 	filesystems map[string]*Filesystem
 }
 
-func NewMountManager(filesystems ...map[string]any) *MountManager {
+func NewMountManager(filesystems ...map[string]*Filesystem) *MountManager {
 	mm := &MountManager{
 		filesystems: make(map[string]*Filesystem),
 	}
@@ -28,9 +28,9 @@ func NewMountManager(filesystems ...map[string]any) *MountManager {
 	return mm
 }
 
-func (this *MountManager) MountFilesystems(filesystems map[string]any) *MountManager {
+func (this *MountManager) MountFilesystems(filesystems map[string]*Filesystem) *MountManager {
 	for prefix, filesystem := range filesystems {
-		this.MountFilesystem(prefix, filesystem.(*Filesystem))
+		this.MountFilesystem(prefix, filesystem)
 	}
 
 	return this
@@ -50,36 +50,8 @@ func (this *MountManager) GetFilesystem(prefix string) *Filesystem {
 	return this.filesystems[prefix]
 }
 
-// [:prefix, :arguments]
-func (this *MountManager) FilterPrefix(arguments []string) (string, []string) {
-	if len(arguments) < 1 {
-		panic("go-filesystem: arguments slice not empty")
-	}
-
-	path := arguments[0]
-
-	prefix, path := this.GetPrefixAndPath(path)
-
-	newArguments := make([]string, len(arguments))
-	newArguments = append(newArguments, path)
-	newArguments = append(newArguments, arguments[1:]...)
-
-	return prefix, newArguments
-}
-
-// [:prefix, :path]
-func (this *MountManager) GetPrefixAndPath(path string) (string, string) {
-	paths := strings.SplitN(path, "://", 2)
-
-	if len(paths) < 1 {
-		panic(fmt.Sprintf("go-filesystem: [%s] prefix not exists", path))
-	}
-
-	return paths[0], paths[1]
-}
-
 func (this *MountManager) ListContents(directory string, recursive ...bool) ([]map[string]any, error) {
-	prefix, dir := this.GetPrefixAndPath(directory)
+	prefix, dir := this.getPrefixAndPath(directory)
 
 	filesystem := this.GetFilesystem(prefix)
 
@@ -97,8 +69,7 @@ func (this *MountManager) ListContents(directory string, recursive ...bool) ([]m
 }
 
 func (this *MountManager) Copy(from string, to string, conf ...map[string]any) (bool, error) {
-	prefixFrom, pathFrom := this.GetPrefixAndPath(from)
-
+	prefixFrom, pathFrom := this.getPrefixAndPath(from)
 	buffer, err := this.GetFilesystem(prefixFrom).ReadStream(pathFrom)
 	if err != nil {
 		return false, err
@@ -106,8 +77,7 @@ func (this *MountManager) Copy(from string, to string, conf ...map[string]any) (
 
 	defer buffer.Close()
 
-	prefixTo, pathTo := this.GetPrefixAndPath(to)
-
+	prefixTo, pathTo := this.getPrefixAndPath(to)
 	result, err2 := this.GetFilesystem(prefixTo).WriteStream(pathTo, buffer, conf...)
 	if err2 != nil {
 		return false, err2
@@ -117,8 +87,8 @@ func (this *MountManager) Copy(from string, to string, conf ...map[string]any) (
 }
 
 func (this *MountManager) Move(from string, to string, conf ...map[string]any) (bool, error) {
-	prefixFrom, pathFrom := this.GetPrefixAndPath(from)
-	prefixTo, pathTo := this.GetPrefixAndPath(to)
+	prefixFrom, pathFrom := this.getPrefixAndPath(from)
+	prefixTo, pathTo := this.getPrefixAndPath(to)
 
 	if prefixFrom == prefixTo {
 		filesystem := this.GetFilesystem(prefixFrom)
@@ -146,129 +116,164 @@ func (this *MountManager) Move(from string, to string, conf ...map[string]any) (
 }
 
 func (this *MountManager) Has(path string) bool {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).Has(newPath)
 }
 
 func (this *MountManager) Read(path string) ([]byte, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).Read(newPath)
 }
 
 func (this *MountManager) ReadStream(path string) (io.ReadCloser, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).ReadStream(newPath)
 }
 
 func (this *MountManager) GetMetadata(path string) (map[string]any, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).GetMetadata(newPath)
 }
 
 func (this *MountManager) GetSize(path string) (int64, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).GetSize(newPath)
 }
 
 func (this *MountManager) GetMimetype(path string) (string, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).GetMimetype(newPath)
 }
 
 func (this *MountManager) GetTimestamp(path string) (int64, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).GetTimestamp(newPath)
 }
 
 func (this *MountManager) GetVisibility(path string) (string, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).GetVisibility(newPath)
 }
 
 func (this *MountManager) Write(path string, contents []byte, conf ...map[string]any) (bool, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).Write(newPath, contents, conf...)
 }
 
 func (this *MountManager) WriteStream(path string, resource io.Reader, conf ...map[string]any) (bool, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).WriteStream(newPath, resource, conf...)
 }
 
 func (this *MountManager) Update(path string, contents []byte, conf ...map[string]any) (bool, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).Update(newPath, contents, conf...)
 }
 
 func (this *MountManager) UpdateStream(path string, resource io.Reader, conf ...map[string]any) (bool, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).UpdateStream(newPath, resource, conf...)
 }
 
-func (this *MountManager) Rename(path string, newpath string) (bool, error) {
-	prefix, pather := this.GetPrefixAndPath(path)
+func (this *MountManager) Rename(path string, newname string) (bool, error) {
+	prefix, pather := this.getPrefixAndPath(path)
 
-	return this.GetFilesystem(prefix).Rename(pather, newpath)
+	return this.GetFilesystem(prefix).Rename(pather, newname)
 }
 
 func (this *MountManager) Delete(path string) (bool, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).Delete(newPath)
 }
 
+func (this *MountManager) Create(filename string, conf ...map[string]any) (bool, error) {
+	prefix, newFilename := this.getPrefixAndPath(filename)
+
+	return this.GetFilesystem(prefix).Create(newFilename, conf...)
+}
+
 func (this *MountManager) DeleteDir(dirname string) (bool, error) {
-	prefix, newDirname := this.GetPrefixAndPath(dirname)
+	prefix, newDirname := this.getPrefixAndPath(dirname)
 
 	return this.GetFilesystem(prefix).DeleteDir(newDirname)
 }
 
 func (this *MountManager) CreateDir(dirname string, conf ...map[string]any) (bool, error) {
-	prefix, newDirname := this.GetPrefixAndPath(dirname)
+	prefix, newDirname := this.getPrefixAndPath(dirname)
 
 	return this.GetFilesystem(prefix).CreateDir(newDirname, conf...)
 }
 
-func (this *MountManager) SetVisibility(path string, visibility string) (bool, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
-
-	return this.GetFilesystem(prefix).SetVisibility(newPath, visibility)
-}
-
 func (this *MountManager) Put(path string, contents []byte, conf ...map[string]any) (bool, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).Put(newPath, contents, conf...)
 }
 
 func (this *MountManager) PutStream(path string, resource io.Reader, conf ...map[string]any) (bool, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).PutStream(newPath, resource, conf...)
 }
 
-func (this *MountManager) ReadAndDelete(path string) (any, error) {
-	prefix, newPath := this.GetPrefixAndPath(path)
+func (this *MountManager) ReadAndDelete(path string) ([]byte, error) {
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).ReadAndDelete(newPath)
+}
+
+func (this *MountManager) SetVisibility(path string, visibility string) (bool, error) {
+	prefix, newPath := this.getPrefixAndPath(path)
+
+	return this.GetFilesystem(prefix).SetVisibility(newPath, visibility)
 }
 
 // file := Get("/file.txt").(*File)
 // dir := Get("/dir").(*Directory)
 func (this *MountManager) Get(path string, handler ...func(*Filesystem, string) any) any {
-	prefix, newPath := this.GetPrefixAndPath(path)
+	prefix, newPath := this.getPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).Get(newPath, handler...)
 }
+
+// [:prefix, :arguments]
+func (this *MountManager) FilterPrefix(arguments []string) (string, []string) {
+	if len(arguments) < 1 {
+		panic("go-filesystem: arguments slice not empty")
+	}
+
+	path := arguments[0]
+
+	prefix, path := this.getPrefixAndPath(path)
+
+	newArguments := make([]string, 0)
+	newArguments = append(newArguments, path)
+	newArguments = append(newArguments, arguments[1:]...)
+
+	return prefix, newArguments
+}
+
+// [:prefix, :path]
+func (this *MountManager) getPrefixAndPath(path string) (string, string) {
+	paths := strings.SplitN(path, "://", 2)
+
+	if len(paths) < 1 {
+		panic(fmt.Sprintf("go-filesystem: [%s] prefix not exists", path))
+	}
+
+	return paths[0], paths[1]
+}
+

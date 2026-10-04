@@ -264,9 +264,9 @@ func Test_GetMetadata(t *testing.T) {
 		"type":      "file",
 	}
 
-	assertEqual(res["path"], check["path"], "Test_ListContents path")
-	assertEqual(res["size"], check["size"], "Test_ListContents size")
-	assertEqual(res["type"], check["type"], "Test_ListContents type")
+	assertEqual(res["path"], check["path"], "Test_GetMetadata path")
+	assertEqual(res["size"], check["size"], "Test_GetMetadata size")
+	assertEqual(res["type"], check["type"], "Test_GetMetadata type")
 
 	if res["timestamp"].(int64) <= 0 {
 		t.Errorf("timestamp get error, got %d", res["timestamp"])
@@ -597,6 +597,57 @@ func Test_Copy(t *testing.T) {
 	assertEqual(res33, false, "Test_Copy Delete after Has")
 }
 
+func Test_Create(t *testing.T) {
+	assertEqual := assertEqualT(t)
+
+	root := "./testdata"
+	adapter := local_adapter.New(root)
+
+	fs := New(adapter)
+
+	res, err := fs.Create("/newtestcopy.txt")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	assertEqual(res, true, "Test_Create")
+
+	res2 := fs.Has("/newtestcopy.txt")
+	assertEqual(res2, true, "Test_Create Has")
+
+	res3, _ := fs.Delete("/newtestcopy.txt")
+	assertEqual(res3, true, "Test_Create Delete")
+
+	res33 := fs.Has("/newtestcopy.txt")
+	assertEqual(res33, false, "Test_Create Delete after Has")
+}
+
+func Test_CopyDir(t *testing.T) {
+	assertEqual := assertEqualT(t)
+
+	root := "./testdata"
+	adapter := local_adapter.New(root)
+
+	fs := New(adapter)
+
+	_, err := fs.CopyDir("/test_dir", "/newtest_dir")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res2 := fs.Has("/newtest_dir")
+	assertEqual(res2, true, "Test_Copy Exists")
+
+	res3, err := fs.DeleteDir("/newtest_dir")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertEqual(res3, true, "Test_Copy Delete")
+
+	res33 := fs.Has("/newtest_dir")
+	assertEqual(res33, false, "Test_Copy Delete after Exists")
+}
+
 func Test_CreateDir(t *testing.T) {
 	assertEqual := assertEqualT(t)
 
@@ -679,7 +730,23 @@ func Test_Get_Read(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	assertEqual(string(res), "testdata", "Test_Read")
+	assertEqual(string(res), "testdata", "Test_Get_Read")
+}
+
+func Test_Get_Read2(t *testing.T) {
+	assertEqual := assertEqualT(t)
+
+	root := "./testdata"
+	adapter := local_adapter.New(root)
+
+	fs := New(adapter)
+
+	res := fs.Get("/test.txt", func(f *Filesystem, path string) any {
+		res2, _ := f.Read(path)
+		return res2
+	})
+
+	assertEqual(string(res.([]byte)), "testdata", "Test_Get_Read2")
 }
 
 func Test_Get_ListContents(t *testing.T) {

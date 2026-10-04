@@ -18,7 +18,6 @@ type Abstract struct {
 func (this *Abstract) SetPathPrefix(prefix string) {
 	if prefix == "" {
 		this.pathPrefix = ""
-
 		return
 	}
 

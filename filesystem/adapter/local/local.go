@@ -269,15 +269,84 @@ func (this *Local) Delete(path string) error {
 	return nil
 }
 
+func (this *Local) Create(filename string, config interfaces.Config) (map[string]string, error) {
+	location := this.ApplyPathPrefix(filename)
+
+	visibility := config.Get("visibility", "public").(string)
+
+	file, err := os.OpenFile(location, os.O_CREATE, this.formatPerm(permissionMap["file"][visibility]))
+	if err != nil {
+		return nil, errors.New("go-filesystem: exec os.OpenFile() fail, error: " + err.Error())
+	}
+
+	defer file.Close()
+
+	data := map[string]string{
+		"path": filename,
+		"type": "dir",
+	}
+
+	return data, nil
+}
+
+func (this *Local) CopyDir(path string, newpath string) error {
+	path = this.ApplyPathPrefix(path)
+	newpath = this.ApplyPathPrefix(newpath)
+
+	if srcInfo, err := os.Stat(path); err != nil {
+        return err
+    } else {
+        if !srcInfo.IsDir() {
+            e := errors.New("go-filesystem: path is not dir path")
+            return e
+        }
+    }
+
+    if !this.Has(newpath) {
+        err := os.MkdirAll(newpath, os.ModePerm)
+        if err != nil {
+            return err
+        }
+    }
+
+    if destInfo, err := os.Stat(newpath); err != nil {
+        return err
+    } else {
+        if !destInfo.IsDir() {
+            e := errors.New("go-filesystem: newpath is not dir path")
+            return e
+        }
+    }
+
+    srcPath, _ := filepath.Abs(path)
+    destPath, _ := filepath.Abs(newpath)
+
+    err := filepath.Walk(srcPath, func(path string, f os.FileInfo, err error) error {
+        if f == nil {
+            return err
+        }
+
+        if !f.IsDir() {
+            destNewPath := strings.Replace(path, srcPath, destPath, -1)
+
+            this.Copy(path, destNewPath)
+        }
+
+        return nil
+    })
+
+    return err
+}
+
 func (this *Local) DeleteDir(dirname string) error {
 	location := this.ApplyPathPrefix(dirname)
 
 	if !this.isDir(location) {
-		return errors.New("go-filesystem: file delete fail, not file type")
+		return errors.New("go-filesystem: dir delete fail, not dir type")
 	}
 
 	if err := os.RemoveAll(location); err != nil {
-		return errors.New("go-filesystem: file delete fail, error: " + err.Error())
+		return errors.New("go-filesystem: dir delete fail, error: " + err.Error())
 	}
 
 	return nil

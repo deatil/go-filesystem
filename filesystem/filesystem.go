@@ -333,11 +333,41 @@ func (this *Filesystem) Copy(path string, newpath string) (bool, error) {
 	return true, nil
 }
 
-// Delete path
+// Delete file
 func (this *Filesystem) Delete(path string) (bool, error) {
 	path = util.NormalizePath(path)
 
 	if err := this.adapter.Delete(path); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// Create file
+func (this *Filesystem) Create(filename string, conf ...map[string]any) (bool, error) {
+	filename = util.NormalizePath(filename)
+
+	var newConf map[string]any
+	if len(conf) > 0 {
+		newConf = conf[0]
+	}
+
+	configs := this.prepareConfig(newConf)
+
+	if _, err := this.adapter.Create(filename, configs); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// Copy dir
+func (this *Filesystem) CopyDir(path string, newpath string) (bool, error) {
+	path = util.NormalizePath(path)
+	newpath = util.NormalizePath(newpath)
+
+	if err := this.adapter.CopyDir(path, newpath); err != nil {
 		return false, err
 	}
 
@@ -474,7 +504,7 @@ func (this *Filesystem) SetVisibility(path string, visibility string) (bool, err
 
 // file := Get("/file.txt").(*File)
 // dir := Get("/dir").(*Directory)
-func (this *Filesystem) Get(path string, handler ...func(*Filesystem, string) any) any {
+func (this *Filesystem) Get(path string, handler ...func(f *Filesystem, path string) any) any {
 	path = util.NormalizePath(path)
 
 	if len(handler) > 0 {
