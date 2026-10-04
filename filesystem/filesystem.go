@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"os"
 
 	"github.com/deatil/go-filesystem/filesystem/config"
 	"github.com/deatil/go-filesystem/filesystem/interfaces"
@@ -12,7 +11,7 @@ import (
 )
 
 /**
- * 文件管理器
+ * Filesystem
  *
  * @create 2021-8-1
  * @author deatil
@@ -29,7 +28,7 @@ func New(adapter interfaces.Adapter, conf ...map[string]any) *Filesystem {
 	}
 
 	if len(conf) > 0 {
-		fs.config = fs.PrepareConfig(conf[0])
+		fs.config = fs.prepareConfig(conf[0])
 	}
 
 	return fs
@@ -43,13 +42,6 @@ func (this *Filesystem) WithConfig(conf interfaces.Config) {
 // Get Config
 func (this *Filesystem) GetConfig() interfaces.Config {
 	return this.config
-}
-
-// Prepare Config
-func (this *Filesystem) PrepareConfig(settings map[string]any) interfaces.Config {
-	conf := config.New(settings)
-
-	return conf
 }
 
 // With Adapter
@@ -83,7 +75,7 @@ func (this *Filesystem) Write(path string, contents []byte, conf ...map[string]a
 		newConf = conf[0]
 	}
 
-	configs := this.PrepareConfig(newConf)
+	configs := this.prepareConfig(newConf)
 
 	if _, err := this.adapter.Write(path, contents, configs); err != nil {
 		return false, err
@@ -101,7 +93,7 @@ func (this *Filesystem) WriteStream(path string, resource io.Reader, conf ...map
 		newConf = conf[0]
 	}
 
-	configs := this.PrepareConfig(newConf)
+	configs := this.prepareConfig(newConf)
 
 	if _, err := this.adapter.WriteStream(path, resource, configs); err != nil {
 		return false, err
@@ -119,7 +111,7 @@ func (this *Filesystem) Put(path string, contents []byte, conf ...map[string]any
 		newConf = conf[0]
 	}
 
-	configs := this.PrepareConfig(newConf)
+	configs := this.prepareConfig(newConf)
 
 	if this.Has(path) {
 		if _, err := this.adapter.Update(path, contents, configs); err != nil {
@@ -145,7 +137,7 @@ func (this *Filesystem) PutStream(path string, resource io.Reader, conf ...map[s
 		newConf = conf[0]
 	}
 
-	configs := this.PrepareConfig(newConf)
+	configs := this.prepareConfig(newConf)
 
 	if this.Has(path) {
 		if _, err := this.adapter.UpdateStream(path, resource, configs); err != nil {
@@ -185,7 +177,7 @@ func (this *Filesystem) Update(path string, contents []byte, conf ...map[string]
 		newConf = conf[0]
 	}
 
-	configs := this.PrepareConfig(newConf)
+	configs := this.prepareConfig(newConf)
 
 	if _, err := this.adapter.Update(path, contents, configs); err != nil {
 		return false, err
@@ -203,7 +195,7 @@ func (this *Filesystem) UpdateStream(path string, resource io.Reader, conf ...ma
 		newConf = conf[0]
 	}
 
-	configs := this.PrepareConfig(newConf)
+	configs := this.prepareConfig(newConf)
 
 	if _, err := this.adapter.WriteStream(path, resource, configs); err != nil {
 		return false, err
@@ -288,17 +280,21 @@ func (this *Filesystem) AppendStream(path string, resource io.Reader, conf ...ma
 // Read bytes
 func (this *Filesystem) Read(path string) ([]byte, error) {
 	path = util.NormalizePath(path)
-	object, err := this.adapter.Read(path)
 
+	object, err := this.adapter.Read(path)
 	if err != nil {
 		return nil, err
 	}
 
-	return object["contents"].([]byte), nil
+	if contents, ok := object["contents"].([]byte); ok {
+		return contents, nil
+	}
+
+	return nil, errors.New("go-filesystem: invalid contents type")
 }
 
 // Read and return Stream
-func (this *Filesystem) ReadStream(path string) (*os.File, error) {
+func (this *Filesystem) ReadStream(path string) (io.Reader, error) {
 	path = util.NormalizePath(path)
 	object, err := this.adapter.ReadStream(path)
 
@@ -306,7 +302,11 @@ func (this *Filesystem) ReadStream(path string) (*os.File, error) {
 		return nil, err
 	}
 
-	return object["stream"].(*os.File), nil
+	if reader, ok := object["stream"].(io.Reader); ok {
+		return reader, nil
+	}
+
+	return nil, errors.New("go-filesystem: invalid stream type")
 }
 
 // Rename path
@@ -367,7 +367,7 @@ func (this *Filesystem) CreateDir(dirname string, conf ...map[string]any) (bool,
 		newConf = conf[0]
 	}
 
-	configs := this.PrepareConfig(newConf)
+	configs := this.prepareConfig(newConf)
 
 	if _, err := this.adapter.CreateDir(dirname, configs); err != nil {
 		return false, err
@@ -391,25 +391,33 @@ func (this *Filesystem) ListContents(dirname string, recursive ...bool) ([]map[s
 // GetMimetype
 func (this *Filesystem) GetMimetype(path string) (string, error) {
 	path = util.NormalizePath(path)
-	object, err := this.adapter.GetMimetype(path)
 
+	object, err := this.adapter.GetMimetype(path)
 	if err != nil {
 		return "", err
 	}
 
-	return object["mimetype"].(string), nil
+	if mimetype, ok := object["mimetype"].(string); ok {
+		return mimetype, nil
+	}
+
+	return "", errors.New("go-filesystem: invalid mimetype type")
 }
 
 // GetTimestamp
 func (this *Filesystem) GetTimestamp(path string) (int64, error) {
 	path = util.NormalizePath(path)
-	object, err := this.adapter.GetTimestamp(path)
 
+	object, err := this.adapter.GetTimestamp(path)
 	if err != nil {
 		return 0, err
 	}
 
-	return object["timestamp"].(int64), nil
+	if timestamp, ok := object["timestamp"].(int64); ok {
+		return timestamp, nil
+	}
+
+	return 0, errors.New("go-filesystem: invalid timestamp type")
 }
 
 // GetVisibility string
@@ -427,13 +435,17 @@ func (this *Filesystem) GetVisibility(path string) (string, error) {
 // GetSize
 func (this *Filesystem) GetSize(path string) (int64, error) {
 	path = util.NormalizePath(path)
-	object, err := this.adapter.GetSize(path)
 
+	object, err := this.adapter.GetSize(path)
 	if err != nil {
 		return 0, err
 	}
 
-	return object["size"].(int64), nil
+	if size, ok := object["size"].(int64); ok {
+		return size, nil
+	}
+
+	return 0, errors.New("go-filesystem: invalid size type")
 }
 
 // SetVisibility
@@ -451,11 +463,12 @@ func (this *Filesystem) SetVisibility(path string, visibility string) (bool, err
 func (this *Filesystem) GetMetadata(path string) (map[string]any, error) {
 	path = util.NormalizePath(path)
 
-	if info, err := this.adapter.GetMetadata(path); err != nil {
+	info, err := this.adapter.GetMetadata(path)
+	if err != nil {
 		return nil, err
-	} else {
-		return info, nil
 	}
+
+	return info, nil
 }
 
 // file := Get("/file.txt").(*File)
@@ -468,7 +481,6 @@ func (this *Filesystem) Get(path string, handler ...func(*Filesystem, string) an
 	}
 
 	data, _ := this.GetMetadata(path)
-
 	if data != nil && data["type"] == "file" {
 		file := &File{}
 		file.SetFilesystem(this)
@@ -482,4 +494,10 @@ func (this *Filesystem) Get(path string, handler ...func(*Filesystem, string) an
 	dir.SetPath(path)
 
 	return dir
+}
+
+// Prepare Config
+func (this *Filesystem) prepareConfig(settings map[string]any) interfaces.Config {
+	conf := config.New(settings)
+	return conf
 }

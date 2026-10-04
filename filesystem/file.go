@@ -2,11 +2,10 @@ package filesystem
 
 import (
 	"io"
-	"os"
 )
 
 /**
- * 文件管理扩展
+ * File
  *
  * @create 2021-8-1
  * @author deatil
@@ -46,7 +45,7 @@ func (this *File) Read() ([]byte, error) {
 	return this.filesystem.Read(this.path)
 }
 
-func (this *File) ReadStream() (*os.File, error) {
+func (this *File) ReadStream() (io.Reader, error) {
 	return this.filesystem.ReadStream(this.path)
 }
 
@@ -70,7 +69,7 @@ func (this *File) Put(content []byte) (bool, error) {
 	return this.filesystem.Update(this.path, content)
 }
 
-func (this *File) PutStream(resource *os.File) (bool, error) {
+func (this *File) PutStream(resource io.Reader) (bool, error) {
 	return this.filesystem.PutStream(this.path, resource)
 }
 

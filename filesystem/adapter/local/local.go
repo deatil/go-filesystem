@@ -1,6 +1,7 @@
 package local
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -193,17 +194,23 @@ func (this *Local) Read(path string) (map[string]any, error) {
 func (this *Local) ReadStream(path string) (map[string]any, error) {
 	location := this.ApplyPathPrefix(path)
 
-	stream, err := os.Open(location)
+	file, err := os.Open(location)
 	if err != nil {
 		return nil, errors.New("go-filesystem: exec os.Open() fail, error: " + err.Error())
 	}
 
-	// defer stream.Close()
+	defer file.Close()
+
+	buf := &bytes.Buffer{}
+	_, err = io.Copy(buf, file)
+	if err != nil {
+		return nil, errors.New("go-filesystem: read resource fail, error: " + err.Error())
+	}
 
 	return map[string]any{
 		"type":   "file",
 		"path":   path,
-		"stream": stream,
+		"stream": buf,
 	}, nil
 }
 
@@ -589,7 +596,6 @@ func (this *Local) fileMode(fp string) (uint32, error) {
 
 // Format Perm
 func (this *Local) formatPerm(i uint32) os.FileMode {
-	// 八进制转成十进制
 	// p, _ := strconv.ParseInt(strconv.Itoa(i), 8, 0)
 	return os.FileMode(i)
 }

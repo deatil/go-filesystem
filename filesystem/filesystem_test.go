@@ -1,12 +1,13 @@
-package filesystem_test
+package filesystem
 
 import (
 	"bytes"
+	"io"
 	"reflect"
 	"testing"
 
-	"github.com/deatil/go-filesystem/filesystem"
 	local_adapter "github.com/deatil/go-filesystem/filesystem/adapter/local"
+	"github.com/deatil/go-filesystem/filesystem/config"
 )
 
 func assertErrorT(t *testing.T) func(error, string) {
@@ -25,6 +26,46 @@ func assertEqualT(t *testing.T) func(any, any, string) {
 	}
 }
 
+func Test_With(t *testing.T) {
+	assertEqual := assertEqualT(t)
+
+	settings := map[string]any{
+		"test": "data",
+	}
+	conf := config.New(settings)
+
+	root := "./testdata"
+	adapter := local_adapter.New(root)
+
+	{
+		fs := New(adapter)
+		fs.WithConfig(conf)
+
+		assertEqual(conf, fs.config, "Test_WithConfig")
+	}
+
+	{
+		fs := New(adapter, settings)
+
+		assertEqual(conf, fs.config, "Test_WithConfig")
+		assertEqual(conf, fs.GetConfig(), "Test_WithConfig")
+	}
+
+	{
+		fs := New(nil)
+		fs.WithAdapter(adapter)
+
+		assertEqual(adapter, fs.adapter, "Test_WithConfig")
+	}
+
+	{
+		fs := New(adapter)
+
+		assertEqual(adapter, fs.adapter, "Test_WithConfig")
+		assertEqual(adapter, fs.GetAdapter(), "Test_WithConfig")
+	}
+}
+
 func Test_ListContents(t *testing.T) {
 	assertEqual := assertEqualT(t)
 
@@ -33,7 +74,7 @@ func Test_ListContents(t *testing.T) {
 	adapter := local_adapter.New(root)
 
 	// 磁盘
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	// 使用
 	res, err := fs.ListContents("/")
@@ -71,7 +112,7 @@ func Test_Has(t *testing.T) {
 	root := "./testdata"
 	adapter := local_adapter.New(root)
 
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	res := fs.Has("/test.txt")
 	assertEqual(res, true, "Test_Has")
@@ -87,7 +128,7 @@ func Test_Read(t *testing.T) {
 	root := "./testdata"
 	adapter := local_adapter.New(root)
 
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	res, err := fs.Read("/test.txt")
 	if err != nil {
@@ -104,7 +145,7 @@ func Test_GetMimetype(t *testing.T) {
 	root := "./testdata"
 	adapter := local_adapter.New(root)
 
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	res, err := fs.GetMimetype("/test.txt")
 	if err != nil {
@@ -119,7 +160,7 @@ func Test_GetTimestamp(t *testing.T) {
 	root := "./testdata"
 	adapter := local_adapter.New(root)
 
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	res, err := fs.GetTimestamp("/test.txt")
 	if err != nil {
@@ -136,7 +177,7 @@ func Test_GetVisibility(t *testing.T) {
 	root := "./testdata"
 	adapter := local_adapter.New(root)
 
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	res, err := fs.GetVisibility("/test.txt")
 	if err != nil {
@@ -155,7 +196,7 @@ func Test_GetSize(t *testing.T) {
 	root := "./testdata"
 	adapter := local_adapter.New(root)
 
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	res, err := fs.GetSize("/test.txt")
 	if err != nil {
@@ -173,7 +214,7 @@ func Test_GetMetadata(t *testing.T) {
 	adapter := local_adapter.New(root)
 
 	// 磁盘
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	// 使用
 	res, err := fs.GetMetadata("/test.txt")
@@ -205,10 +246,42 @@ func Test_Write(t *testing.T) {
 	adapter := local_adapter.New(root)
 
 	// 磁盘
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	// 使用
 	ok, err := fs.Write("/testcopy.txt", []byte("testtestdata1111111"))
+	if !ok {
+		t.Fatal(err.Error())
+	}
+
+	res2, err := fs.Read("/testcopy.txt")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	assertEqual(string(res2), "testtestdata1111111", "Test_Write")
+
+	// 使用
+	ok, err = fs.Write("/testcopy.txt", []byte("testdata"))
+	if !ok {
+		t.Fatal(err.Error())
+	}
+}
+
+func Test_WriteStream(t *testing.T) {
+	assertEqual := assertEqualT(t)
+
+	// 根目录
+	root := "./testdata"
+	adapter := local_adapter.New(root)
+
+	// 磁盘
+	fs := New(adapter)
+
+	buf := bytes.NewBufferString("testtestdata1111111")
+
+	// 使用
+	ok, err := fs.WriteStream("/testcopy.txt", buf)
 	if !ok {
 		t.Fatal(err.Error())
 	}
@@ -235,7 +308,7 @@ func Test_Put(t *testing.T) {
 	adapter := local_adapter.New(root)
 
 	// 磁盘
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	// 使用
 	ok, err := fs.Put("/testcopy.txt", []byte("222222222"))
@@ -265,7 +338,7 @@ func Test_Prepend(t *testing.T) {
 	adapter := local_adapter.New(root)
 
 	// 磁盘
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	// 使用
 	ok, err := fs.Prepend("/testcopy.txt", []byte("222222222"))
@@ -295,7 +368,7 @@ func Test_PrependStream(t *testing.T) {
 	adapter := local_adapter.New(root)
 
 	// 磁盘
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	prependDdata := bytes.NewBuffer([]byte("222222222"))
 
@@ -327,7 +400,7 @@ func Test_Append(t *testing.T) {
 	adapter := local_adapter.New(root)
 
 	// 磁盘
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	// 使用
 	ok, err := fs.Append("/testcopy.txt", []byte("222222222"))
@@ -357,7 +430,7 @@ func Test_AppendStream(t *testing.T) {
 	adapter := local_adapter.New(root)
 
 	// 磁盘
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	appendData := bytes.NewBuffer([]byte("222222222"))
 
@@ -389,7 +462,7 @@ func Test_Rename(t *testing.T) {
 	adapter := local_adapter.New(root)
 
 	// 磁盘
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	// 使用
 	ok, err := fs.Rename("/testcopy.txt", "/testcopy222.txt")
@@ -421,7 +494,7 @@ func Test_Copy(t *testing.T) {
 	root := "./testdata"
 	adapter := local_adapter.New(root)
 
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	res, err := fs.Copy("/testcopy.txt", "/newtestcopy.txt")
 	if err != nil {
@@ -447,7 +520,7 @@ func Test_CreateDir(t *testing.T) {
 	root := "./testdata"
 	adapter := local_adapter.New(root)
 
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	res, err := fs.CreateDir("/testdir")
 	if err != nil {
@@ -473,7 +546,7 @@ func Test_HasDir(t *testing.T) {
 	root := "./testdata"
 	adapter := local_adapter.New(root)
 
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	res := fs.Has("/testdir222")
 	assertEqual(res, true, "Test_HasDir")
@@ -489,7 +562,7 @@ func Test_ReadAndDelete(t *testing.T) {
 	root := "./testdata"
 	adapter := local_adapter.New(root)
 
-	fs := filesystem.New(adapter)
+	fs := New(adapter)
 
 	res, err := fs.Copy("/testcopy.txt", "/testReadAndDelete.txt")
 	if err != nil {
@@ -510,4 +583,28 @@ func Test_ReadAndDelete(t *testing.T) {
 
 	res33 := fs.Has("/testReadAndDelete.txt")
 	assertEqual(res33, false, "Test_ReadAndDelete ReadAndDelete after Has")
+}
+
+func Test_ReadStream(t *testing.T) {
+	assertEqual := assertEqualT(t)
+
+	// 根目录
+	root := "./testdata"
+	adapter := local_adapter.New(root)
+
+	// 磁盘
+	fs := New(adapter)
+
+	res, err := fs.ReadStream("/test.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	buf := &bytes.Buffer{}
+	_, err = io.Copy(buf, res)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assertEqual(string(buf.Bytes()), "testdata", "Test_ReadStream")
 }

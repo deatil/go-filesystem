@@ -3,7 +3,6 @@ package filesystem
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 )
 
@@ -105,9 +104,6 @@ func (this *MountManager) Copy(from string, to string, conf ...map[string]any) (
 		return false, err
 	}
 
-	// 手动关闭文件流
-	defer buffer.Close()
-
 	prefixTo, pathTo := this.GetPrefixAndPath(to)
 
 	result, err2 := this.GetFilesystem(prefixTo).WriteStream(pathTo, buffer, conf...)
@@ -159,7 +155,7 @@ func (this *MountManager) Read(path string) ([]byte, error) {
 	return this.GetFilesystem(prefix).Read(newPath)
 }
 
-func (this *MountManager) ReadStream(path string) (*os.File, error) {
+func (this *MountManager) ReadStream(path string) (io.Reader, error) {
 	prefix, newPath := this.GetPrefixAndPath(path)
 
 	return this.GetFilesystem(prefix).ReadStream(newPath)
